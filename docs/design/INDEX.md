@@ -1,6 +1,6 @@
 # FMT-Model-2025b 设计阶段索引
 
-最后更新:2026-05-05
+最后更新:2026-05-07
 状态:设计阶段进行中。**所有实现工作在设计阶段完成前一律不开始。**
 
 ## 总则
@@ -65,6 +65,7 @@ docs/design/
 | A6 | Init/Reset 状态契约 | [A-architecture/A6-init-reset-contract.md](A-architecture/A6-init-reset-contract.md) | 2026-05-05 | pass |
 | A7 | 时间与时间戳约定 | [A-architecture/A7-time-conventions.md](A-architecture/A7-time-conventions.md) | 2026-05-05 | pass |
 | A8 | 共享库块清单与归属 | [A-architecture/A8-shared-library-roster.md](A-architecture/A8-shared-library-roster.md) | 2026-05-05 | pass |
+| A3 | 模块边界信号清单细化 | [A-architecture/A3-module-boundaries.md](A-architecture/A3-module-boundaries.md) | 2026-05-07 | pass |
 
 ## 整体计划审查报告
 
@@ -90,6 +91,8 @@ docs/design/
 | 2026-05-05 | 设计协同对扩展:(D3, D4, D6, E1) 合一;新增 (H1, H4) | 01-design-relationships §5 |
 | 2026-05-05 | A1 已升至 reviewed(verdict: pass) | A1-v1-review.md frontmatter |
 | 2026-05-05 | Wave 2 完成:A2/A4/A5/A6/A7/A8 全部 reviewed(verdict: pass);6 个并行 Author + 6 个并行 Reviewer 派发模式按 playbook §3.1+§3.2 执行 | A-architecture/ + INDEX 已完成清单 |
+| 2026-05-07 | Wave 3 完成:A3 reviewed(verdict: pass);Author + Reviewer 单工作项串行派发(playbook §3.1+§3.2);A3 闭合 A1 §5.1.4(FMS 输入 mandatory/optional 切分)/§5.1.5(`FMS_Out_Bus` 字段重要性枚举)/§5.1.6(INS 消费侧依赖矩阵 §4.8)/§7.2(FMS passthrough 字段集 §4.6,区分 passthrough-with-shape vs passthrough-direct)/§8.3 + OQ4(`Control_Out_Bus`-as-FMS-input 仅 bus 边界级记录,功能裁决留 D1 §4.10);16 firmware-bus 全覆盖 | [A3-module-boundaries.md](A-architecture/A3-module-boundaries.md) |
+| 2026-05-07 | A3 (模块边界信号清单) `contract_impact: yes`:决定 16 个 firmware-mirrored bus 的字段方向(I/O/Optional/Variant-conditional)、Reset 类别(PARAM/HARDCODED/ZERO/PRESERVED,per A6 §4.4)、单位与坐标系(per A2 §4.10)、产出方 nominal rate(per A4 §4.1)。byte 布局留 [B1](B-contracts/B1-bus-inventory.md);A3 标记的 "B1 to confirm" 字段集(motor_cmd 单位、quaternion 顺序、euler 顺序、Mag 单位、wp_array 长度、`FMS_Out_Bus.reset` 字段是否存在、FMS validity echo 字段是否存在)是 B1 显式接受的验证清单。Firmware 引用:`FMT-Firmware/src/model/{plant,fms,control}/<vehicle>/lib/{Plant,FMS,Controller}_types.h` + `FMT-Firmware/src/model/ins/lib/INS_types.h`,commit hash 占位 `<pending hash>`,与 A6/A7 同期补齐 | [A3-module-boundaries.md §3, §4.6, §4.8, §4.10](A-architecture/A3-module-boundaries.md) |
 | 2026-05-05 | A6 (Init/Reset 契约) `contract_impact: yes`:模型仓侧承诺保留 firmware 头文件中 `Plant_init` / `FMS_init` / `Controller_init` 的 `void(void)` 签名;任何 codegen 输出改变 init 签名被视为 hard-fail。Firmware 引用:`FMT-Firmware/src/model/{plant,fms,control}/<vehicle>/lib/{Plant,FMS,Controller}.h` | [A6-init-reset-contract.md §4.2.1](A-architecture/A6-init-reset-contract.md) |
 | 2026-05-05 | A7 (时间约定) `contract_impact: yes`:`uint32_t timestamp` 单位 = ms,epoch = zero-from-boot,49.71 天回卷,模块内 dt 走固定步长(非 timestamp 派生),timestamp 仅用于跨模块陈旧检测/日志/profiling。Firmware 引用:`FMT-Firmware/src/model/fms/fms_interface.h:29`、`FMT-Firmware/src/task/vehicle/normal/task_vehicle.c:59,65,81`、`FMT-Firmware/src/module/system/systime.h:99-100` | [A7-time-conventions.md §4.8](A-architecture/A7-time-conventions.md) |
 | 2026-05-05 | A7 §5 风险登记:`FMT-Firmware/src/model/fms/template_fms/fms_interface.c:24` 签名 `(void)` 与头文件 `(uint32_t timestamp)` 不一致 — 推荐 firmware 侧修复;模型仓不动 firmware | [A7-time-conventions.md §5, §7](A-architecture/A7-time-conventions.md) |
