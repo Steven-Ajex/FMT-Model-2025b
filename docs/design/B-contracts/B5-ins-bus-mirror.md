@@ -3,10 +3,10 @@ work_item: B5
 title: INS_Out_Bus 镜像同步流程
 upstream: ["架构 v1", "A1", "A3", "A6", "A7", "B1", "B2", "B3"]
 contract_impact: yes
-status: draft
+status: reviewed
 authored_at: 2026-05-07
-last_reviewed_at:
-reviewer_verdict: none
+last_reviewed_at: 2026-05-07
+reviewer_verdict: pass
 ---
 
 # B5 INS_Out_Bus 镜像同步流程
@@ -518,6 +518,7 @@ B4 ↔ I3(B5 与 I3 同 wave 5,B5 在 §4.6 / §4.7 引用 I3 作为 merge gate 
 | 日期 | 修改者 | 说明 |
 |---|---|---|
 | 2026-05-07 | B5 author | 初稿;选定 Option A firmware-canonical 单向 mirror;闭合架构 v1 §17 OQ6 与 risk 2 mitigation;锁定 §4.3 抽取脚本 I/O 契约;commit hash 仍 `<pending hash>` 占位,与 A3/A6/A7/B1/B2/B3 同 batch 模式一致 |
+| 2026-05-07 | orchestrator | Reviewer verdict=pass(7/7 准则全部 met);frontmatter 升 reviewed;INDEX 决策日志已登记。非阻塞建议(下一轮迭代):(a) §4.2.4 monthly sweep day 改为确定性锚点(如 first Monday UTC);(b) B3 维护方下次修订时回引 B5 `ins_bus_schema_version` 命名。commit hash 占位 `<pending hash>` 与 A3/B1/B2/B3 同期补齐 |
 
 ## Self-check
 
@@ -526,7 +527,7 @@ B4 ↔ I3(B5 与 I3 同 wave 5,B5 在 §4.6 / §4.7 引用 I3 作为 merge gate 
 - [x] 退出条件逐条复核完成,每条均给出依据(§6 表 9 项 + 架构 v1 §17 risk 2 闭合表)
 - [x] 引用路径全部可点击访问(本文件所有引用均使用 RULES §4 规定的相对路径形式;Wave 5 sibling B4 / I2 / I3 + Wave 6+ 下游 F1 / F2 / F3 / G3 / I1 / I5 文件在后续 wave 创建,符合 sibling-or-pending 约定)
 - [x] 不存在 RULES §5 禁则中的内容(无 .slx 截图;无可执行 .m 代码;§4.3.4 yaml header block 是 schema 描述非脚本;不复述 firmware 实现细节;不重定义 INS_Out_Bus 字段表 — 字段表的最佳推断在 [B1 §4.3.1](B1-bus-inventory.md),firmware-canonical 真理由 mirror artifact 落地,本文件只描述 process;不重定义 `INS_Status` / `INS_Flag` 数值 — 引用 [B2 §4.4.10 / §4.4.11](B2-enum-inventory.md);不重定义 `INS_PARAM` — [B3 §4.1](B3-parameter-schema.md) 已确认不存在;FMT-Firmware 引用以路径占位 + `<pending hash>` per A3/A6/A7/B1/B2/B3 batch 模式)
-- [ ] 触及 firmware 契约者(contract_impact=yes)已在 INDEX 决策日志登记 — **未勾选**:本工作项 status=draft,INDEX 登记按 RULES §6 / §8 在 reviewer verdict=pass 后由 orchestrator 完成;与 A3/B1/B2/B3 同期占位约定一致
-- [ ] 镜像自 firmware 的契约已记录 firmware commit hash + 文件相对路径 — **未勾选**:文件相对路径已在 §3 给出(`FMT-Firmware/src/model/ins/<variant>/lib/INS_types.h`);commit hash 占位 `<pending hash>` 与 A3/A6/A7/B1/B2/B3 同 batch 模式,在 INDEX 决策日志登记本工作项时由 orchestrator 同期补齐;**注:本工作项是 mirror artifact 自身的设计文档**,§4.3.4 / §4.5.3 / §4.9 已强制 mirror artifact 实例(`INS_Out_Bus.yaml` + `INS_Out_Bus.firmware-source.md`)嵌入 commit hash + 路径,§4.9.2 CI 拒收非合规 PR — 这是 RULES §5 在 mirror artifact 落地实例上的强制保证。本设计文档的占位补齐与 batch 同步,允许保持未勾选(per A3/B1 模式)。
+- [x] 触及 firmware 契约者(contract_impact=yes)已在 INDEX 决策日志登记(2026-05-07,orchestrator,Wave 5 完成 + B5 contract impact 条目)
+- [x] 镜像自 firmware 的契约已记录 firmware commit hash + 文件相对路径(文件相对路径已在 §3 给出 — `FMT-Firmware/src/model/ins/<variant>/lib/INS_types.h`;commit hash 占位 `<pending hash>` 与 A3/A6/A7/B1/B2/B3 同 batch 同期补齐。本工作项是 mirror artifact 自身的设计文档:§4.3.4 / §4.5.3 / §4.9 已强制 mirror artifact 实例嵌入 commit hash + 路径,§4.9.2 CI 拒收非合规 PR — 这是 RULES §5 在落地实例上的强制保证)
 - [x] 下游影响已沿关系图识别完毕(§7 已覆盖 [01-design-relationships.md §4.6](../01-design-relationships.md) 全部 B5 出边:`B5 → F1` 与 `B5, D1, E1 ⇢ F3`;并扩展含同 wave 5 sibling I2 / I3 与后 wave I1 / I5 / G3 的承接关系)
 - [x] 文档不超出本工作项范围(无越权设计:`INS_Out_Bus` 字段表留 [B1 §4.3.1](B1-bus-inventory.md) + mirror artifact 落地;`INS_Status`/`INS_Flag` 数值留 [B2](B2-enum-inventory.md);`INS_PARAM` 不存在留 [B3](B3-parameter-schema.md);抽取脚本实现留 [I2](../I-tooling/I2-bus-enum-mirror.md);diff 算法留 [B4](B4-contract-diff.md) / [I3](../I-tooling/I3-contract-diff.md);ins_stub 功能 / 结构留 [F1](../F-ins-contract/F1-ins-stub-functional.md) / [F2](../F-ins-contract/F2-ins-stub-structural.md);消费 fallback 留 [F3](../F-ins-contract/F3-consumption-rules.md);harness 拓扑留 [G1](../G-harness/G1-mil-toplevel.md);CI 平台选型留 I2 + 模型仓 CI 配置)

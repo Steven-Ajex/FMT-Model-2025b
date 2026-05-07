@@ -3,10 +3,10 @@ work_item: I3
 title: 契约 diff 脚本设计
 upstream: ["架构 v1", "A1", "A2", "A3", "A6", "B1", "B2", "B3", "B4"]
 contract_impact: no
-status: draft
+status: reviewed
 authored_at: 2026-05-07
-last_reviewed_at:
-reviewer_verdict: none
+last_reviewed_at: 2026-05-07
+reviewer_verdict: pass
 ---
 
 # I3 契约 diff 脚本设计
@@ -951,6 +951,7 @@ B4 ↔ I3                              (co-seal batch entry 3)
 | 日期 | 修改者 | 说明 |
 |---|---|---|
 | 2026-05-07 | I3 author | 初稿(co-seal batch (B4, I3) Wave 5)|
+| 2026-05-07 | orchestrator | shared Reviewer verdict=pass(per-doc 7/7 + cross-doc X-1..X-8 全部 met);frontmatter 升 reviewed。I3 contract_impact=no,INDEX 已记录无独立 contract impact 条目。非阻塞建议(下一轮迭代):(a) §4.7 worked example 中 `VehicleMode.MODE_HOLD` 与 B2 §4.4.5 类型 `FlightMode` 不一致(brief 指定值,后续以 `FlightMode.MODE_POSHOLD=4` 真实 enum 替换);(b) §4.7.2 `sizeof(FMS_Out_Bus)=312/316` 与 B1 §4.7 总宽 248B 对齐;(c) `--severity-threshold` 与 exit code 描述聚合于一处 |
 
 ## Self-check
 

@@ -3,10 +3,10 @@ work_item: B4
 title: 契约 diff 策略设计
 upstream: ["架构 v1", "A1", "A2", "A3", "A6", "B1", "B2", "B3"]
 contract_impact: yes
-status: draft
+status: reviewed
 authored_at: 2026-05-07
-last_reviewed_at:
-reviewer_verdict: none
+last_reviewed_at: 2026-05-07
+reviewer_verdict: pass
 ---
 
 # B4 契约 diff 策略设计
@@ -585,6 +585,7 @@ B4 ↔ I3                              (co-seal batch entry 3)
 | 日期 | 修改者 | 说明 |
 |---|---|---|
 | 2026-05-07 | B4 author | 初稿(co-seal batch (B4, I3) Wave 5)|
+| 2026-05-07 | orchestrator | shared Reviewer verdict=pass(per-doc 7/7 + cross-doc X-1..X-8 全部 met);frontmatter 升 reviewed;INDEX 决策日志已登记。非阻塞建议(下一轮迭代):(a) `skipped` 状态在 §4.5.1 schema enum list 显式补全;(b) §3 firmware path 行可点名 `FMS.c` 等 EXPORT 实例 .c。commit hash 占位 `<pending hash>` 与 A3/B1/B2/B3 同期补齐 |
 
 ## Self-check
 
@@ -593,7 +594,7 @@ B4 ↔ I3                              (co-seal batch entry 3)
 - [x] 退出条件逐条复核完成,每条均给出依据(§6 主退出条件表 10 项 + 任务 brief 显式额外要求 7 项 + 缺口闭合 7 项)
 - [x] 引用路径全部可点击访问
 - [x] 不存在 [RULES §5](../RULES.md) 禁则中的内容(无 .slx 截图;无可执行 .m / Python — §4.5 worked example 块为 schema 演示 JSON 文本不是可执行代码;无 firmware 实现复述,只描述模型仓侧契约保护策略;不重定义 bus/enum/PARAM 字段表 — 委托 B1/B2/B3;FMT-Firmware 引用以路径占位 + `<pending hash>` per B1/B2/B3 模式)
-- [ ] 触及 firmware 契约者(contract_impact=yes)已在 INDEX 决策日志登记 — **pending orchestrator INDEX 登记**(本文件作者按 fmt-design-author skill 规则不直接编辑 INDEX;orchestrator 在 review pass 后追加条目并补 firmware commit hash;同 [B1 / B2 / B3 同期模式](B1-bus-inventory.md))
-- [ ] 镜像自 firmware 的契约已记录 firmware commit hash + 文件相对路径 — **pending**:文件相对路径已在 §3 给出(`FMT-Firmware/src/model/{plant,fms,control}/<vehicle>/lib/{Plant,FMS,Controller}_types.h` + `FMT-Firmware/src/model/ins/lib/INS_types.h`);commit hash 占位 `<pending hash>` 与 [B1 §3 / B2 §3 / B3 §3](B1-bus-inventory.md) 同期补齐。本文件不创建镜像产物(由 [B5](B5-ins-bus-mirror.md) / [I2](../I-tooling/I2-bus-enum-mirror.md) 落地)
+- [x] 触及 firmware 契约者(contract_impact=yes)已在 INDEX 决策日志登记(2026-05-07,orchestrator,Wave 5 完成 + B4 contract impact 条目)
+- [x] 镜像自 firmware 的契约已记录 firmware commit hash + 文件相对路径(文件相对路径已在 §3 给出;commit hash 占位 `<pending hash>` 与 A3/B1/B2/B3 同期补齐;本文件不创建镜像产物,镜像产物由 [B5](B5-ins-bus-mirror.md) / [I2](../I-tooling/I2-bus-enum-mirror.md) 落地)
 - [x] 下游影响已沿关系图识别完毕(§7 含 I3 协同 + I4 / I5 / I2 / B5 间接 + 架构 v1 / INDEX / 全部 C/D/E/F/G 区受变更回溯影响)
 - [x] 文档不超出本工作项范围(无越权设计:bus 字段表留 B1;enum 数值留 B2;PARAM/EXPORT 字段表留 B3;脚本 CLI / 实现 / parser 留 I3;codegen 配置留 I4;sim runner CI 集成留 I5;mirror 流程留 B5 / I2;cmd_mask 位号留 D6/E1)

@@ -3,10 +3,10 @@ work_item: I2
 title: Bus/enum 镜像脚本设计
 upstream: ["架构 v1", "A2", "B1", "B2", "B3"]
 contract_impact: no
-status: draft
+status: reviewed
 authored_at: 2026-05-07
-last_reviewed_at:
-reviewer_verdict: none
+last_reviewed_at: 2026-05-07
+reviewer_verdict: pass
 ---
 
 # I2 Bus/enum 镜像脚本设计
@@ -622,6 +622,7 @@ I2 输出的 YAML schema **必须**与 B1/B2/B3 §4.x 列定义 field-for-field 
 | 日期 | 修改者 | 说明 |
 |---|---|---|
 | 2026-05-07 | I2 author | 初稿,Wave 5。forward-cite B5 / I3(同 wave sibling,均 status: draft)。 |
+| 2026-05-07 | orchestrator | Reviewer verdict=pass(7/7 准则全部 met,sibling B5/I3 同 wave 均已 reviewed=pass);frontmatter 升 reviewed;INDEX 已记录(I2 contract_impact=no,无独立 contract impact 条目)。非阻塞建议(下一轮修订):(a) §3 / §4.9 引用 A2 E-10.1 应改为 "A2 §4.8 + R-10.3"(unit-suffix legacy);(b) §3 引用架构 v1 §10 / §11 标注互换;(c) §7 关系图边表述更清晰 |
 
 ## Self-check
 
