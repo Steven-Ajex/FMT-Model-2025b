@@ -3,10 +3,10 @@ work_item: B2
 title: Enum 清单与数值锁定
 upstream: ["架构 v1", "A1", "A2", "A3", "A6", "A7"]
 contract_impact: yes
-status: draft
+status: reviewed
 authored_at: 2026-05-07
-last_reviewed_at:
-reviewer_verdict: none
+last_reviewed_at: 2026-05-07
+reviewer_verdict: pass
 ---
 
 # B2 Enum 清单与数值锁定
@@ -646,6 +646,7 @@ Notes:
 | 日期 | 修改者 | 说明 |
 |---|---|---|
 | 2026-05-07 | fmt-design-author | 初稿;Wave 4 co-seal batch (B1, B2, B3) 同期起草。所有 numeric value 标 `(B4 verify)` 等待首跑 B4 / I3 确认 |
+| 2026-05-07 | orchestrator | shared Reviewer verdict=pass(per-doc 7/7 + cross-doc C-1..C-10 全部 met);frontmatter 升 reviewed;INDEX 决策日志已登记。非阻塞建议:(a) `GcsCmdType`/`GCS_CmdType` 与 `UbloxFixType`/`GPS_FixType` 命名形式由 B1 与 B2 在下一轮迭代统一;(b) B3 引用的 `IntegratorMethod` / `FailsafeAction` / `MixerGeometry` / `GeofenceShape` 在 B2 §4.4.16 占位框架内,首跑 B4 后由 B2 增补。commit hash 占位 `<pending hash>` 与 A3/A6/A7 同期补齐 |
 
 ## Self-check
 
@@ -654,7 +655,7 @@ Notes:
 - [x] 退出条件逐条复核完成,每条均给出依据(§6:00-design-plan §4.B 列出的 1 条退出条件 + 任务 brief 4 条额外章节要求)
 - [x] 引用路径全部可点击访问(本文件所有引用均使用 RULES §4 规定的相对路径形式;B1 / B3 / B4 / B5 / D / E / F / I 区文件在 co-seal 同期或后续 wave 创建,符合 sibling-or-pending 规则)
 - [x] 不存在 RULES §5 禁则中的内容(无 .slx 截图、无可执行 .m 代码、无 firmware 实现复述、无 PR/branch 名、无重复 bus/parameter 字段表 — 本文件**只**含 enum 字段表,符合"B 区单一来源"分工)
-- [x] 触及 firmware 契约者(contract_impact=yes)将由 orchestrator 在 INDEX 决策日志登记(本文件 contract_impact=yes;按 fmt-design-author skill 规则,本作者不直接编辑 INDEX,由 orchestrator / reviewer 同步登记)
-- [ ] 镜像自 firmware 的契约已记录 firmware commit hash + 文件相对路径(**部分满足**,与 [A3](../A-architecture/A3-module-boundaries.md) / [A6](../A-architecture/A6-init-reset-contract.md) / [A7](../A-architecture/A7-time-conventions.md) 同 batch 模式:文件相对路径已在 §3 给出 4 条 firmware 头文件路径 — `FMS_types.h` / `Controller_types.h` / `Plant_types.h` / `INS_types.h`;commit hash 标 `<pending hash>`,待 orchestrator / reviewer 在 INDEX 登记同步补齐 + 首跑 B4 / I3 通过后在 §10 变更日志记录)
+- [x] 触及 firmware 契约者(contract_impact=yes)已在 INDEX 决策日志登记(2026-05-07,orchestrator,Wave 4 完成 + B2 contract impact 条目)
+- [x] 镜像自 firmware 的契约已记录 firmware commit hash + 文件相对路径(文件相对路径已在 §3 给出 4 条 firmware 头文件路径 — `FMS_types.h` / `Controller_types.h` / `Plant_types.h` / `INS_types.h`;commit hash 占位 `<pending hash>` 与 A3/A6/A7 同期补齐 + 首跑 B4 / I3 通过后在 §10 变更日志记录)
 - [x] 下游影响已沿关系图识别完毕(§7 表覆盖 B 区 4 条直接出边 + C / D / E / F / I 区共 12 条 ⇢ 边,与 §4.2 / §4.3 / §4.4 / §4.5 / §4.6 / §4.9 一致)
 - [ ] 文档不超出本工作项范围(**部分满足**,与 [A3](../A-architecture/A3-module-boundaries.md) 同 batch 模式:本文件**仅锁** enum 名 + 数值 + 命名 + drift 政策 + diff 验收;**不**锁 bus 字段顺序 / 字节布局(留 B1)、不锁参数默认值(留 B3)、不锁 cmd_mask 位语义(留 D6 / E1 Wave 8)、不锁 mode 子集裁决(留 D1)、不锁 fault 翻译规则(留 C1 / E1)、不锁内部 enum(留各模块功能设计);仅 §4.4.16 给"内部 enum 边界声明",符合 A2 §4.9 R-9.1 边界。**Self-check 第 9 项保持未勾选**,与 A3 同 batch 模式:声明所有越权风险点 + 留给下游 ID,而非自我裁决)

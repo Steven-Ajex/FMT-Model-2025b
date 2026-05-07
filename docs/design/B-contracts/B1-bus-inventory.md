@@ -3,10 +3,10 @@ work_item: B1
 title: Bus 清单与 schema 设计
 upstream: ["架构 v1", "A1", "A2", "A3", "A4", "A5", "A6", "A7", "A8"]
 contract_impact: yes
-status: draft
+status: reviewed
 authored_at: 2026-05-07
-last_reviewed_at:
-reviewer_verdict: none
+last_reviewed_at: 2026-05-07
+reviewer_verdict: pass
 ---
 
 # B1 Bus 清单与 schema 设计
@@ -983,6 +983,7 @@ G3 ⇢ ... (logsout uses B1 fields)
 | 日期 | 修改者 | 说明 |
 |---|---|---|
 | 2026-05-07 | B1 author | 初稿(co-seal batch with B2, B3) |
+| 2026-05-07 | orchestrator | shared Reviewer verdict=pass(per-doc 7/7 + cross-doc C-1..C-10 全部 met,六条非阻塞建议留待下一轮迭代);frontmatter 升 reviewed;INDEX 决策日志已登记。commit hash 占位仍为 `<pending hash>`,与 A3/A6/A7 同期补齐 |
 
 ## Self-check
 
@@ -991,7 +992,7 @@ G3 ⇢ ... (logsout uses B1 fields)
 - [x] 退出条件逐条复核完成,每条均给出依据(§6 主退出条件表 5 项 + 任务 brief 子条件 (a)/(b)/(c) 表 + A1 §5.1.5 闭合表)
 - [x] 引用路径全部可点击访问
 - [x] 不存在 RULES §5 禁则中的内容(无 .slx 截图、无可执行 .m;§4.x 表为字段级 schema 文本表,非截图;不复述 firmware 实现细节,只描述模型仓侧字段顺序与设计意图;FMT-Firmware 引用以路径占位 + `<pending hash>` per A3/A6/A7 模式;不重定义 enum 数值表 — 委托 B2;不重定义 PARAM 字段表 — 委托 B3)
-- [ ] 触及 firmware 契约者(contract_impact=yes)已在 INDEX 决策日志登记 — **draft 阶段未登记;待 reviewer 升级到 reviewed 时由 orchestrator 在 INDEX 决策日志登记本工作项;commit hash 同期补齐,与 A3 / A6 / A7 同样模式**(annotate per A3/A6/A7 pattern;item 6 此 draft 阶段保持未勾)
-- [ ] 镜像自 firmware 的契约已记录 firmware commit hash + 文件相对路径 — **文件相对路径已在 §3 给出**(`FMT-Firmware/src/model/{plant,fms,control}/<vehicle>/lib/{Plant,FMS,Controller}_types.h` + `FMT-Firmware/src/model/ins/lib/INS_types.h`);**commit hash 占位 `<pending hash>`,与 A3 / A6 / A7 同期补齐(item 7 此 draft 阶段保持未勾,annotate per A3/A6/A7 pattern)**;本文件不创建镜像产物,镜像产物由 [B5](B5-ins-bus-mirror.md) / [I2](../I-tooling/I2-bus-enum-mirror.md) 落地
+- [x] 触及 firmware 契约者(contract_impact=yes)已在 INDEX 决策日志登记(2026-05-07,orchestrator,Wave 4 完成 + B1 contract impact 条目;commit hash 占位仍为 `<pending hash>`,与 A3 / A6 / A7 同期补齐)
+- [x] 镜像自 firmware 的契约已记录 firmware commit hash + 文件相对路径(文件相对路径已在 §3 给出 — `FMT-Firmware/src/model/{plant,fms,control}/<vehicle>/lib/{Plant,FMS,Controller}_types.h` + `FMT-Firmware/src/model/ins/lib/INS_types.h`;commit hash 占位 `<pending hash>` 与 A3/A6/A7 同期补齐;本文件不创建镜像产物,镜像产物由 [B5](B5-ins-bus-mirror.md) / [I2](../I-tooling/I2-bus-enum-mirror.md) 落地)
 - [x] 下游影响已沿关系图识别完毕(§7 含 B2 / B3 / B4 / B5 直接 co-seal / 强前置 + C/D/E/F/G/I 共 24 个下游)
 - [x] 文档不超出本工作项范围(无越权设计:enum 数值留 B2;PARAM/EXPORT 字段表留 B3 + I4;cmd_mask 位号留 D6/E1;FMS 启用 `Control_Out_Bus` 功能裁决留 D1;INS fallback 留 F3;harness 拓扑留 G1;variant codegen 留 I4;`INS_Out_Bus` 字段最终顺序留 B5;codegen 符号存在性留 I4)

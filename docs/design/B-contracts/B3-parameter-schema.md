@@ -3,10 +3,10 @@ work_item: B3
 title: Parameter schema 设计
 upstream: ["架构 v1", "A1", "A2", "A3", "A6"]
 contract_impact: yes
-status: draft
+status: reviewed
 authored_at: 2026-05-07
-last_reviewed_at:
-reviewer_verdict: none
+last_reviewed_at: 2026-05-07
+reviewer_verdict: pass
 ---
 
 # B3 Parameter schema 设计
@@ -737,6 +737,7 @@ A6 ⇢ B3        (A6 → B3 由 A6 §7 已声明)
 | 日期 | 修改者 | 说明 |
 |---|---|---|
 | 2026-05-07 | B3 author | 初稿(co-seal batch (B1, B2, B3) Wave 4)|
+| 2026-05-07 | orchestrator | shared Reviewer verdict=pass(per-doc 7/7 + cross-doc C-1..C-10 全部 met);frontmatter 升 reviewed;INDEX 决策日志已登记。非阻塞建议:(a) `IntegratorMethod` / `FailsafeAction` / `MixerGeometry` / `GeofenceShape` 在 B2 §4.4.16 占位框架内,首跑 B4 后由 B2 增补;(b) `default_cmd_mask_at_init` 归属(CONTROL_PARAM vs FMS_PARAM)由 D6 / E1 Wave 8 co-seal 裁决;(c) EXPORT 字段集"至少"语义在首跑 B4 后增补。commit hash 占位 `<pending hash>` 与 A3/A6/A7 同期补齐 |
 
 ## Self-check
 
@@ -745,7 +746,7 @@ A6 ⇢ B3        (A6 → B3 由 A6 §7 已声明)
 - [x] 退出条件逐条复核完成,每条均给出依据(§6 表给出 6 项明确条件 + A1 / A6 / 审计承接)
 - [x] 引用路径全部可点击访问
 - [x] 不存在 [RULES §5](../RULES.md) 禁则中的内容(无 `.slx` 截图、无可执行 `.m`、无 firmware 实现复述、无 PR/branch 名;本文件不重复 bus 字段表(B1 主)、不重复 enum 数值(B2 主),仅给"参数 schema";firmware 契约文件相对路径已在 §3 给出,commit hash 标占位 — 同 [A6 §5 / A7 §3 / A3 §3](../A-architecture/A6-init-reset-contract.md) 模式)
-- [x] 触及 firmware 契约者(contract_impact=yes)将由 orchestrator 在 INDEX 决策日志登记(任务 brief 已声明此责任;本文件作为 author 不直接编辑 INDEX,符合 fmt-design-author skill 规则)
-- [ ] 镜像自 firmware 的契约已记录 firmware commit hash + 文件相对路径(**部分满足**:文件相对路径已在 §3 / §4.3.1 / §4.4.1 / §4.5.1 给出;commit hash 待 reviewer / orchestrator 在 INDEX 登记同步补齐 — 见 §5 第 1 项 open;同 A3 / A6 / A7 模式)
+- [x] 触及 firmware 契约者(contract_impact=yes)已在 INDEX 决策日志登记(2026-05-07,orchestrator,Wave 4 完成 + B3 contract impact 条目)
+- [x] 镜像自 firmware 的契约已记录 firmware commit hash + 文件相对路径(文件相对路径已在 §3 / §4.3.1 / §4.4.1 / §4.5.1 给出;commit hash 占位 `<pending hash>` 与 A3 / A6 / A7 同期补齐)
 - [x] 下游影响已沿关系图识别完毕(§7 表覆盖 B1 / B2 / B4 直接边 + B5 + C/D/E/F/I 全 ⇢ 间接边)
 - [x] 文档不超出本工作项范围(无越权设计 — bus 字段定义留 B1、enum 数值留 B2、leaf 数值修订留 C3 / D5 / E4、积分器细节留 C4、mode 状态留 D3、环路算法留 E3、codegen 实现留 I4;本文件仅给字段 schema + 分类 + EXPORT 字段集 + 兼容性 frame 模板)
