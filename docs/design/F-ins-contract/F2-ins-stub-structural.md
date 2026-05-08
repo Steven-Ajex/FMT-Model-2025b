@@ -3,10 +3,10 @@ work_item: F2
 title: ins_stub 结构设计
 upstream: ["架构 v1", "A1", "A3", "A4", "A5", "A6", "A7", "A8", "B1", "B2", "B5", "C1", "F1"]
 contract_impact: no
-status: draft
+status: reviewed
 authored_at: 2026-05-08
-last_reviewed_at:
-reviewer_verdict: none
+last_reviewed_at: 2026-05-08
+reviewer_verdict: pass
 ---
 
 # F2 ins_stub 结构设计(harness-only INS 替身的块级结构、数据流与字段映射)

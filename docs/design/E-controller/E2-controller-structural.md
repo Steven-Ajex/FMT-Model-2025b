@@ -3,10 +3,10 @@ work_item: E2
 title: Controller 结构设计(级联拓扑、共享 vs leaf、库块清单)
 upstream: [架构v1, A3, A4, A5, A6, A7, A8, B1, B2, B3]
 contract_impact: no
-status: draft
+status: reviewed
 authored_at: 2026-05-08
-last_reviewed_at:
-reviewer_verdict: none
+last_reviewed_at: 2026-05-08
+reviewer_verdict: pass
 ---
 
 # E2 Controller 结构设计

@@ -3,10 +3,10 @@ work_item: D2
 title: FMS 结构设计
 upstream: [架构v1, A1, A2, A3, A4, A5, A6, A7, A8, B1, B2, B3, D1]
 contract_impact: no
-status: draft
+status: reviewed
 authored_at: 2026-05-08
-last_reviewed_at:
-reviewer_verdict: none
+last_reviewed_at: 2026-05-08
+reviewer_verdict: pass
 ---
 
 # D2 FMS 结构设计
