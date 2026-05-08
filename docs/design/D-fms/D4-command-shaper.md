@@ -506,7 +506,9 @@ Step 3: D4 应用 D6 §4.5 INS validity gate
         从 INS_Out_Bus.INS_Status / INS_Flag 读取:
         - if INS_Status < INS_STATUS_READY: cmd_mask = 0 (forced, FS-04)
         - if INS_FLAG_BIT_POSITION_VALID == 0: clear BIT_POS
-        - if INS_FLAG_BIT_VELOCITY_VALID == 0: clear BIT_VEL & BIT_ACC
+        - if INS_FLAG_BIT_VELOCITY_VALID == 0: clear BIT_POS & BIT_VEL & BIT_ACC
+              (rationale: 位置环依赖速度反馈做阻尼;若速度不可靠,位置闭环不能稳定;
+               与 D6 §4.5 行 "INS 速度失效" 政策"FMS 不得 emit BIT_POS / BIT_VEL / BIT_ACC" 对齐)
         - if INS_FLAG_BIT_ATTITUDE_VALID == 0: cmd_mask = 0 (forced)
         - if INS_FLAG_BIT_HEADING_VALID == 0: clear BIT_YAW
         (D4 实现的此行为 = D6 §4.5 政策中"FMS 应 emit"的 emission 端 enforcement)
@@ -530,6 +532,7 @@ Step 5: Output Assembler (D2 §4.3.6) 把 FMS_Shape_to_Asm_Bus.cmd_mask 直传�
 | G-3 | 部分 INS 失效(POS/VEL/ATT/HDG 单失效) | clear 对应位;同步 force 字段 ZERO | D6 §4.5 行 2..5 |
 | G-4 | quat 与 euler 都填 | D4 设计保证只填一个;此守卫 redundant assert(debug-only)| MX-9 |
 | G-5 | reset / DISARMED 强制态 | cmd_mask = 0 | MX-1 + D6 §4.7 |
+| G-6 | **MX-8 No-thrust-source guard**:`BIT_THROTTLE_PASSTHROUGH==0 AND BIT_POS==0 AND BIT_VEL==0 AND BIT_ACC==0 AND (BIT_ATT==1 OR BIT_RATE==1)`(姿态 / 角速度有参考但无总推力源)| cmd_mask = 0(强制);emit `ERR_FMS_CMD_NO_THRUST_SOURCE`(B2 §4.4.12 ErrorCode 工作名,具体 enum 名待 B2 / E1 锁,fallback `ERR_FMS_CMD_INCONSISTENT`);若未已 active,触发 Failsafe overlay 转入(via D3 chart safety 通道,P0 优先级)| MX-8 |
 
 > **关键不变量**:G-1..G-5 的实现**复制** D6 的政策(由 D6 §4.4 / §4.5 锁);D4 不**新增** mutex 规则。Phase 3+ 新增位 → D6 修订 → D4 修订(同步)。
 
@@ -635,8 +638,8 @@ E1 的 Mask Resolver(per [E2 §4.1.1](../E-controller/E2-controller-structural.m
   - 处置:由 [D3 Mode Manager 详细设计](D3-mode-manager.md) Wave 8 sibling 在自己文档锁定字段名;若 D3 选用其他机制(如 routing 指令隐含 cmd_mask),D4 §4.7.1 Step 1 同步修订 §8 变更日志
 
 - **MX-7 (THR-only,无 attitude) 在 Phase 2 MIL 不应出现,但 D4 emission 守卫未显式拦截**
-  - 影响:[D6 §4.4 MX-7](D6-fms-controller-interface.md) 锁此组合"合法但极特殊;Phase 2 多旋翼 MIL 不应在飞行场景出现";D4 §4.7.2 G-1..G-5 没有"全平移 + ATT + RATE 全清 但 THR 置位"的拦截器(因为 Phase 2 D3 不 emit 此组合)
-  - 处置:open;若 H1 / H4 引入 ground-test variant 触发 MX-7,D4 §4.7.2 增补 G-6 守卫(行为:emit warning + pass)。当前 Phase 2 D3 不 emit ⇒ D4 不需新增
+  - 影响:[D6 §4.4 MX-7](D6-fms-controller-interface.md) 锁此组合"合法但极特殊;Phase 2 多旋翼 MIL 不应在飞行场景出现";D4 §4.7.2 G-1..G-6 没有"全平移 + ATT + RATE 全清 但 THR 置位"的拦截器(因为 Phase 2 D3 不 emit 此组合)
+  - 处置:open;若 H1 / H4 引入 ground-test variant 触发 MX-7,D4 §4.7.2 增补 G-7 守卫(行为:emit warning + pass)。当前 Phase 2 D3 不 emit ⇒ D4 不需新增
 
 - **Bumpless ramp duration `transition_ramp_ms` 默认值未锁,影响 mode 切换体感**
   - 影响:§4.4.2 ramp 实现依赖 D5 锁定数值;过长 → 模式切换迟钝;过短 → 突变。Phase 2 D5 决定数值
@@ -691,6 +694,7 @@ E1 的 Mask Resolver(per [E2 §4.1.1](../E-controller/E2-controller-structural.m
 | 日期 | 修改者 | 说明 |
 |---|---|---|
 | 2026-05-08 | Wave 8 D4 author | 初稿 — 5 内部块拓扑(§4.1)+ 16 mode 的 cmd_mask + setpoint 映射(§4.2)+ 9 槽 rate/jerk 策略表(§4.3)+ 4 项 bumpless 政策(§4.4)+ 3 profile 算法(§4.5)+ stick conditioning 三件套(§4.6)+ cmd_mask emission 5-step 流水线 + 5 守卫(§4.7)+ A6 reset 协议(§4.8)+ D5/D6/E1 hand-off(§4.9);co-seal batch (D3, D4, D6, E1) 声明 |
+| 2026-05-08 | fix-up author | Wave 8 reviewer changes-requested 修复:Issue 4 — §4.7.1 Step 3 INS validity gate 在 `INS_FLAG_BIT_VELOCITY_VALID==0` 时清位列表追加 `BIT_POSITION_LOOP`(原仅清 BIT_VEL & BIT_ACC),与 D6 §4.5 行 "INS 速度失效" 政策对齐(rationale:位置环依赖速度反馈做阻尼;速度不可靠则位置闭环不能稳定)。Issue 5 — §4.7.2 G-table 增加 G-6 守卫(MX-8 No-thrust-source enforcement):`THR=0 AND POS=0 AND VEL=0 AND ACC=0 AND (ATT=1 OR RATE=1)` → cmd_mask=0 + 发 `ERR_FMS_CMD_NO_THRUST_SOURCE` + 触发 Failsafe overlay;§5 风险表 MX-7 条目 "G-6" 序号顺延为 "G-7" |
 
 ## Self-check
 

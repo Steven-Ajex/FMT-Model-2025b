@@ -210,7 +210,7 @@ Phase 2 多旋翼闭环切片必需的 8 位(B2 §4.4.14 已锁,数值标 `(B4 v
 | 1 | 0 | 姿态环 outer-most;角速度参考由姿态环输出推导 | M-03 STABILIZE / M-04..M-11 闭环间接 |
 | 1 | 1 | 姿态环 outer-most;`ang_rate_cmd` = 角速度环 **feed-forward**;典型 trajectory + 高速跟随 | M-09 MISSION 高动态 |
 | 0 | 1 | 角速度环 outer-most(姿态环旁通);典型 ACRO / MANUAL rate stick 直传 | M-02 MANUAL / M-12 ACRO |
-| 0 | 0 | 姿态域**全部**旁通;Controller 不闭合姿态环 — 仅在 BIT_THROTTLE_PASSTHROUGH + 全平移旁通的"开环演示模式"下出现;否则触发互斥规则(见 §4.4)| 罕见;调试 |
+| 0 | 0 | **三态裁决**:(a) 若任一平移环位置(BIT_POS / BIT_VEL / BIT_ACC)= 1 → 姿态域 **implicit cascade**(per §4.3.6:POS→VEL→ACC→thrust-vector→ATT(roll/pitch)→RATE);姿态目标由 Controller 内部从 thrust-vector 推导,roll/pitch 由 desired thrust direction 决定,yaw 由独立 BIT_YAW / BIT_YAW_RATE 通道驱动(per §4.3.5)— **合法且为 POS-driven 多旋翼模式的典型路径**(M-05 / M-06 / M-07 / M-08 / M-09 / M-10 / FS-01 / FS-02 / FS-03)。(b) 若平移域全清(POS=0 AND VEL=0 AND ACC=0)**且** BIT_THROTTLE_PASSTHROUGH=0 → 违 MX-8(无推力源 + 无姿态稳定),**非法**。(c) 若平移域全清 AND BIT_THROTTLE_PASSTHROUGH=1(ATT/RATE/YAW/YAWR 任意,典型 ATT=RATE=YAW=YAWR=0)→ "开环演示模式"(per MX-7),**合法但极少用,仅 ground-test variant** | (a) M-05/M-06/M-07/M-08/M-09/M-10/FS-01/FS-02/FS-03 多旋翼 POS-driven;(b) 非法;(c) ground-test |
 
 #### 4.3.4 ATT_QUAT vs ATT_EUL 字段二选一
 
@@ -232,11 +232,11 @@ D6 锁定:`MASK_BIT_ATTITUDE_LOOP` 是**单一位**,姿态字段在 D4 端二选
 | BIT_ATT (quat) | BIT_YAW | BIT_YAW_RATE | 裁决(yaw 通道) |
 |:---:|:---:|:---:|---|
 | 1 (quat) | 0 | 0 | yaw = quat 内嵌 yaw |
-| 1 (quat) | 1 | 0 | **非法**(双重定义角度);Controller 优先 BIT_YAW(显式高于隐式),发 `ERR_FMS_CMD_INCONSISTENT` 警告 |
+| 1 (quat) | 1 | 0 | **合法**(显式 yaw 优于 quat 内嵌 yaw;Controller 用 BIT_YAW 字段值,忽略 quat 中的 yaw 分量,per §4.3.5 仲裁原则"显式优于隐式");Optional: emit INFO-level note(非阻塞) — 与 §4.4 MX-10 一致 |
 | 1 (quat) | 0 | 1 | yaw 角 = quat 内嵌 yaw(目标);yaw 角速度 = `yaw_rate_cmd` 作为 yaw 环 FF;**合法且常用** |
-| 1 (quat) | 1 | 1 | **非法**;同上 — 优先 BIT_YAW + BIT_YAW_RATE 显式对(忽略 quat 内嵌 yaw),发警告 |
+| 1 (quat) | 1 | 1 | **合法**(显式 BIT_YAW + BIT_YAW_RATE 对,忽略 quat 内嵌 yaw);Optional: emit INFO-level note(非阻塞)— 与 §4.4 MX-10 一致 |
 | 1 (euler) | 0 | 0 | yaw = euler.yaw |
-| 1 (euler) | 1 | 0 | **非法**;同 quat-冲突;优先 BIT_YAW |
+| 1 (euler) | 1 | 0 | **合法**(显式 BIT_YAW 优于 euler.yaw 分量);Optional: emit INFO-level note(非阻塞) — 与 §4.4 MX-10 一致 |
 | 1 (euler) | 0 | 1 | yaw 角 = euler.yaw;yaw_rate 作 FF — 合法 |
 | 0 (BIT_ATT 清位)| 1 | 0 | yaw 由 BIT_YAW 独立环驱动;Controller 内部对应 yaw-only attitude 环 |
 | 0 | 0 | 1 | yaw_rate 直传到 yaw 角速度环;典型 MANUAL / ACRO yaw-stick |
@@ -275,7 +275,7 @@ Controller **必须**对以下组合做出确定性响应:**reject + 触发安�
 | MX-7 | BIT_ATT=0 **且** BIT_RATE=0 **且** BIT_THROTTLE_PASSTHROUGH=1 | 仅总推力直传,无任何姿态稳定 | **合法但极特殊**:仅在 ground-test / motor-test variant 出现;Phase 2 多旋翼 MIL **不应**在飞行场景出现;**E1 实现**:Controller 输出 throttle 直传 + 全部 attitude/rate 输出 = 0;发 INFO 级标记。Phase 2 不在 D3 任何 mode 中出现此组合 |
 | MX-8 | BIT_THROTTLE_PASSTHROUGH=0 **且**(BIT_POS=0 **且** BIT_VEL=0 **且** BIT_ACC=0)**且**(BIT_ATT=1 或 BIT_RATE=1)| 姿态 / 角速度有参考但无总推力源 | **非法**:Controller 总推力 = 0(零推力姿态参考无意义)+ 发 `ERR_FMS_CMD_INCONSISTENT`;**或** Controller fallback 到 hover-throttle 默认值(由 E1 锁;D6 默认要求 zero-throttle)|
 | MX-9 | 同帧 quat ≠ identity **且** euler ≠ ZERO(per §4.3.4)| 姿态字段双填 | 优先 quat,丢弃 euler,发 `ERR_FMS_CMD_INCONSISTENT` |
-| MX-10 | BIT_ATT=1 **且** BIT_YAW=1 (重叠 yaw)| yaw 通道双重定义 | 优先 BIT_YAW(per §4.3.5);发 INFO/WARNING(D6 锁:WARNING) |
+| MX-10 | BIT_ATT=1 **且** BIT_YAW=1 (重叠 yaw)| yaw 通道双重定义 | **合法**(per §4.3.5 表 row "1(quat/euler)|1|0/1");Controller 优先 BIT_YAW(显式高于 ATT 字段内嵌 yaw);Optional: emit INFO/WARNING-level note(**非阻塞**,不发 ErrorCode);D6 锁:WARNING/INFO 级,**不**触发 `ERR_FMS_CMD_INCONSISTENT` |
 
 #### 4.4.1 Truth-table(Phase 2 8 位组合 — 仅列合法 + 关键非法,per §4.3 + §4.4)
 
@@ -289,9 +289,13 @@ Controller **必须**对以下组合做出确定性响应:**reject + 触发安�
 | `(0,1,0,1,0,0,1,0)` | 合法 | M-04 ALTITUDE_HOLD | vel(z)+ att + yaw_rate;throttle 闭环 |
 | `(0,1,0,1,0,1,0,0)` | 合法 | M-07 POS_CTRL(stick→vel)| vel + att + yaw 角 |
 | `(1,0,0,1,0,1,0,0)` | 合法 | M-05 LOITER / M-08 hold | pos + att + yaw |
-| `(1,1,0,1,0,1,0,0)` | 合法 | M-09 MISSION 一阶 FF | pos + vel FF + att + yaw |
-| `(1,1,1,1,1,1,0,0)` | 合法 | M-09 MISSION 三阶 FF | 全 FF |
-| `(0,0,0,1,0,1,0,0)` | 合法 | M-06 RTL approach | att + yaw |
+| `(1,1,0,1,0,1,0,0)` | 合法 | M-09 MISSION 一阶 FF(显式 ATT)| pos + vel FF + att + yaw |
+| `(1,1,1,1,1,1,0,0)` | 合法 | M-09 MISSION 三阶 FF(显式 ATT+RATE)| 全 FF |
+| `(0,0,0,1,0,1,0,0)` | 合法 | (legacy "RTL approach" — 显式 ATT 路径)| att + yaw |
+| `(1,0,0,0,0,1,0,0)` | 合法 | M-09 LOITER(D4/D3 canonical;ATT 隐式 cascade)| pos + yaw;ATT 由 thrust-vector 推导(per §4.3.3 a) |
+| `(1,1,0,0,0,1,0,0)` | 合法 | M-06 TAKEOFF / M-07 LAND / FS-02 LAND_NOW(D4/D3 canonical;ATT 隐式 cascade)| pos + vel + yaw;ATT 由 thrust-vector 推导(per §4.3.3 a) |
+| `(1,1,1,0,0,1,0,0)` | 合法 | M-08 RTL / M-10 MISSION / FS-01 RTL_FAILSAFE(D4/D3 canonical;ATT 隐式 cascade)| pos + vel FF + acc FF + yaw;ATT 由 thrust-vector 推导(per §4.3.3 a) |
+| `(1,1,1,0,0,1,1,0)` | 合法 | M-05 POSHOLD / FS-03 HOVER_HOLD(D4/D3 canonical;ATT 隐式 cascade)| pos + vel + acc + yaw + yaw_rate FF;ATT 由 thrust-vector 推导(per §4.3.3 a) |
 | `(1,0,0,0,0,0,0,1)` | **非法 MX-2** | — | THR + POS 互斥 |
 | `(0,0,0,0,0,0,0,1)` | 合法但需 Phase | MX-7 | ground-test only |
 | `(1,0,0,0,1,0,0,0)` | **非法 MX-8** | — | rate 有参考但无总推力源 |
@@ -467,6 +471,7 @@ D6 锁定:在以下所有时刻 `cmd_mask` 必须 = `0x00000000`(全 0,所有位
 | 日期 | 修改者 | 说明 |
 |---|---|---|
 | 2026-05-08 | Wave 8 D6 author | 初稿 — 锁定 8 位 cmd_mask 语义(§4.2)+ 三层优先级(§4.3.2/4.3.3/4.3.5)+ 10 条互斥规则(§4.4)+ §4.4.1 truth-table 14 行(合法核心 + 关键非法)+ §4.5 INS validity 政策 + §4.6 D3/D4/E1 hand-off 列头与契约形状 + §4.7 reset/disarmed 强制 cmd_mask=0 + co-seal batch (D3, D4, D6, E1) 声明 |
+| 2026-05-08 | fix-up author | Wave 8 reviewer changes-requested 修复:Issue 2 — §4.3.5 yaw 三态表 row "1(quat)\|1\|0" / "1(quat)\|1\|1" / "1(euler)\|1\|0" 由"非法"改为"合法 + Optional INFO-level note(非阻塞)",与 §4.4 MX-10 (WARNING/INFO 非阻塞) 对齐;§4.4 MX-10 描述细化为"合法 + 非阻塞 INFO/WARNING,不触发 ERR_FMS_CMD_INCONSISTENT"。Issue 3 — §4.3.3 row "ATT=0, RATE=0" 由"罕见;调试"改为三态裁决:(a) 任一平移环位置 → 姿态域 implicit cascade(per §4.3.6 thrust-vector → ATT(roll/pitch))合法 + 为多旋翼 POS-driven 模式典型路径;(b) 平移域全清 + THR=0 → MX-8 非法;(c) 平移全清 + THR=1 → MX-7 ground-test only。§4.4.1 truth-table 新增 4 行(`(1,0,0,0,0,1,0,0)` M-09 LOITER / `(1,1,0,0,0,1,0,0)` M-06/M-07/FS-02 / `(1,1,1,0,0,1,0,0)` M-08/M-10/FS-01 / `(1,1,1,0,0,1,1,0)` M-05/FS-03)反映 D3/D4 canonical 隐式 ATT cascade 路径 |
 
 ## Self-check
 

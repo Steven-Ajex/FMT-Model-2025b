@@ -326,22 +326,22 @@ D3 在每个 ARMED 状态的 `entry` 上一次性写 `cmd_mask` + `route_*` 路�
 | **ARMED.M-02 MANUAL** | 0 | 0 | 0 | 0 | 1 | 0 | 1 | 1 | `(0,0,0,0,1,0,1,1)` | RATE + YAW_RATE + THR direct(D6 §4.4.1 行 2) |
 | **ARMED.M-03 STABILIZE** | 0 | 0 | 0 | 1 | 0 | 0 | 1 | 1 | `(0,0,0,1,0,0,1,1)` | ATT + YAW_RATE + THR direct(D6 §4.4.1 行 3) |
 | **ARMED.M-04 ALTHOLD** | 0 | 1 | 0 | 1 | 0 | 0 | 1 | 0 | `(0,1,0,1,0,0,1,0)` | VEL(z) + ATT(roll/pitch) + YAW_RATE;throttle 闭环(D6 §4.4.1 行 4)|
-| **ARMED.M-05 POSHOLD** | 1 | 0 | 0 | 1 | 0 | 1 | 0 | 0 | `(1,0,0,1,0,1,0,0)` | POS + ATT + YAW(D6 §4.4.1 行 6)|
-| **ARMED.M-06 TAKEOFF** | 1 | 0 | 0 | 1 | 0 | 1 | 0 | 0 | `(1,0,0,1,0,1,0,0)` | 同 M-05 schema(垂直 climb 走 pos_cmd_ned_m[2];D5 leaf 决定是否同时 emit BIT_VEL feed-forward)|
-| **ARMED.M-07 LAND** | 0 | 1 | 0 | 1 | 0 | 0 | 1 | 0 | `(0,1,0,1,0,0,1,0)` | descent profile = vel(z) + ATT;水平 ATT 由 D4 hold(同 M-04 schema)|
-| **ARMED.M-08 RTL** | 1 | 0 | 0 | 1 | 0 | 1 | 0 | 0 | `(1,0,0,1,0,1,0,0)` | 三段 cruise 同 M-05;final descent 转 M-07(LAND)|
-| **ARMED.M-09 LOITER** | 1 | 0 | 0 | 1 | 0 | 1 | 0 | 0 | `(1,0,0,1,0,1,0,0)` | 同 M-05(wp 处停留)|
-| **ARMED.M-10 MISSION** | 1 | 1 | 0 | 1 | 0 | 1 | 0 | 0 | `(1,1,0,1,0,1,0,0)` | POS + VEL FF + ATT + YAW(D6 §4.4.1 行 7;一阶 FF;D5 leaf 可决定升 三阶 FF 即同时 BIT_ACC=1)|
+| **ARMED.M-05 POSHOLD** | 1 | 1 | 1 | 0 | 0 | 1 | 1 | 0 | `(1,1,1,0,0,1,1,0)` | POS + VEL + ACC + YAW + YAWR;ATT 由 thrust-vector cascade 隐式推导(per D6 §4.3.3 / §4.3.6;BIT_ATT=0 表示 FMS 不显式提供姿态参考)— 与 D4 §4.2.1 行 M-05 一致 |
+| **ARMED.M-06 TAKEOFF** | 1 | 1 | 0 | 0 | 0 | 1 | 0 | 0 | `(1,1,0,0,0,1,0,0)` | POS + VEL + YAW;垂直 climb 走 pos+vel z-component(profile 提供);ATT 由 thrust-vector cascade 隐式推导 — 与 D4 §4.2.1 行 M-06 一致 |
+| **ARMED.M-07 LAND** | 1 | 1 | 0 | 0 | 0 | 1 | 0 | 0 | `(1,1,0,0,0,1,0,0)` | descent profile = pos hold(水平)+ vel(z) + YAW;ATT 由 thrust-vector cascade 隐式推导(hover descent)— 与 D4 §4.2.1 行 M-07 一致 |
+| **ARMED.M-08 RTL** | 1 | 1 | 1 | 0 | 0 | 1 | 0 | 0 | `(1,1,1,0,0,1,0,0)` | POS + VEL + ACC + YAW(face-home);ATT 由 thrust-vector cascade 隐式推导;final descent 转 M-07(LAND)— 与 D4 §4.2.1 行 M-08 一致 |
+| **ARMED.M-09 LOITER** | 1 | 0 | 0 | 0 | 0 | 1 | 0 | 0 | `(1,0,0,0,0,1,0,0)` | POS + YAW(wp 处停留);ATT 由 thrust-vector cascade 隐式推导 — 与 D4 §4.2.1 行 M-09 一致 |
+| **ARMED.M-10 MISSION** | 1 | 1 | 1 | 0 | 0 | 1 | 0 | 0 | `(1,1,1,0,0,1,0,0)` | POS + VEL + ACC + YAW(三阶 FF);ATT 由 thrust-vector cascade 隐式推导 — 与 D4 §4.2.1 行 M-10 一致 |
 | **ARMED.M-11 OFFBOARD** | per Auto | per Auto | per Auto | per Auto | per Auto | per Auto | per Auto | per Auto | per `auto_cmd_mask_request` 经 D6 §4.4 互斥过滤 | D6 §4.4.1 行 9..14 中合法子集;D3 转换 T-21 entry action 拷贝 + 过滤 |
 | **ARMED.M-12 ACRO** | 0 | 0 | 0 | 0 | 1 | 0 | 1 | 1 | `(0,0,0,0,1,0,1,1)` | 同 M-02 MANUAL;ACRO 是 rate-stick 直传 |
 | **FAILSAFE_OVERLAY.NORMAL** | (透明 — 不写)| | | | | | | | (透明)| overlay 默认 — main mode 写 |
-| **FAILSAFE_OVERLAY.FS-01 RTL_FAILSAFE** | 1 | 0 | 0 | 1 | 0 | 1 | 0 | 0 | `(1,0,0,1,0,1,0,0)` | overlay 接管 = M-08 RTL schema(home as wp)|
-| **FAILSAFE_OVERLAY.FS-02 LAND_NOW** | 0 | 1 | 0 | 1 | 0 | 0 | 1 | 0 | `(0,1,0,1,0,0,1,0)` | overlay 接管 = M-07 LAND schema(controlled descent)|
-| **FAILSAFE_OVERLAY.FS-03 HOVER_HOLD** | 1 | 0 | 0 | 1 | 0 | 1 | 0 | 0 | `(1,0,0,1,0,1,0,0)` | overlay 接管 = POSHOLD at current pos(LOITER schema with current INS pos as target)|
+| **FAILSAFE_OVERLAY.FS-01 RTL_FAILSAFE** | 1 | 1 | 1 | 0 | 0 | 1 | 0 | 0 | `(1,1,1,0,0,1,0,0)` | overlay 接管 = M-08 RTL schema(home as wp);ATT 由 thrust-vector cascade 隐式推导 — 与 D4 §4.2.2 行 FS-01 一致 |
+| **FAILSAFE_OVERLAY.FS-02 LAND_NOW** | 1 | 1 | 0 | 0 | 0 | 1 | 0 | 0 | `(1,1,0,0,0,1,0,0)` | overlay 接管 = M-07 LAND schema(controlled descent);ATT 由 thrust-vector cascade 隐式推导(hover descent)— 与 D4 §4.2.2 行 FS-02 一致 |
+| **FAILSAFE_OVERLAY.FS-03 HOVER_HOLD** | 1 | 1 | 1 | 0 | 0 | 1 | 1 | 0 | `(1,1,1,0,0,1,1,0)` | overlay 接管 = POSHOLD at current pos;ATT 由 thrust-vector cascade 隐式推导 — 与 D4 §4.2.2 行 FS-03 一致 |
 | **FAILSAFE_OVERLAY.FS-04 DISARM_FORCED** | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | `(0,0,0,0,0,0,0,0)` | all-zero(per D6 §4.7 强制 disarmed-equivalent) |
 
 **契约形状满足**(per D6 §4.6.1):
-- 每行 emission **必须** ∈ D6 §4.4.1 truth-table 的"合法"集合 → 上表全部行已交叉对照 D6 §4.4.1 的"合法 +" 行(`(0,0,0,0,0,0,0,0)`、`(0,0,0,0,1,0,1,1)`、`(0,0,0,1,0,0,1,1)`、`(0,1,0,1,0,0,1,0)`、`(1,0,0,1,0,1,0,0)`、`(1,1,0,1,0,1,0,0)`)。
+- 每行 emission **必须** ∈ D6 §4.4.1 truth-table 的"合法"集合 → 上表全部行已交叉对照 D6 §4.4.1 的"合法 +" 行(`(0,0,0,0,0,0,0,0)`、`(0,0,0,0,1,0,1,1)`、`(0,0,0,1,0,0,1,1)`、`(0,1,0,1,0,0,1,0)`、`(1,0,0,0,0,1,0,0)`、`(1,1,0,0,0,1,0,0)`、`(1,1,1,0,0,1,0,0)`、`(1,1,1,0,0,1,1,0)`)— POS-driven modes(M-05/M-06/M-08/M-09/M-10/FS-01/FS-03)的 BIT_ATT=0 走 D6 §4.3.3 隐式 cascade 路径(thrust-vector→ATT(roll/pitch));LAND-family(M-07/FS-02)同样走隐式 cascade(hover descent)。
 - D3 不 emit `非法 MX-*` 组合(D6 §4.4)。
 - 单一写者:Stateflow `entry` 上写,`during` 上保持(`during` 不重写,除 OFFBOARD M-11 — Auto_Cmd_Bus 变化时由 `auto_cmd_mask_request_change` event 触发 entry action 重新过滤一次)。Output Assembler 不修改(per D2 §4.6.2)。
 - `Auto_Cmd_Bus.cmd_mask_request` 在 M-11 OFFBOARD 内的采纳:T-21 entry action 中**先**经 D6 §4.4 互斥过滤 + §4.5 INS validity 政策过滤;**通过的位**进入 `cmd_mask`;**不通过的位**丢弃,并写 `error_code = ERR_FMS_CMD_INCONSISTENT` (per D6 §4.4 MX-9 类比;具体 ErrorCode 名由 B2 / D6 / E1 锁,本文件留 B2 §4.4.9 现有 `ERR_INTERNAL` 作 fallback)。
@@ -540,6 +540,7 @@ D3 chart 拓扑 + 转换 + 守卫**全部 shared**(macro);D5 leaf 注入仅通�
 | 日期 | 修改者 | 说明 |
 |---|---|---|
 | 2026-05-08 | Wave 8 D3 author | 初稿 — chart 顶层 = 2 AND-state region(ARM_DOMAIN + FAILSAFE_OVERLAY);ARMED super 含 12 mode + DISARMED super 含 INIT + STANDBY;FAILSAFE_OVERLAY 含 NORMAL + FS-01..FS-04 AND-state overlay;§4.2 22-row state↔6-enum 映射表;§4.3 24 ARM_DOMAIN + 9 OVERLAY 转换;§4.4 22 events;§4.5 12 守卫;§4.6 16-row cmd_mask emission 表(满足 D6 §4.4.1 合法 truth-table + §4.6.1 列头);§4.7 reset/init + §4.8 overlay AND-state 论证 + §4.9 D4/D6/E1/D5 hand-off |
+| 2026-05-08 | fix-up author | Wave 8 reviewer changes-requested 修复:Issue 1 — D3 §4.6 cmd_mask emission 表对 7 个 POS-driven modes(M-05 POSHOLD / M-06 TAKEOFF / M-07 LAND / M-08 RTL / M-09 LOITER / M-10 MISSION / FS-01 RTL_FAILSAFE / FS-02 LAND_NOW / FS-03 HOVER_HOLD)按 D4 §4.2.1 / §4.2.2 canonical baseline 改为 BIT_ATTITUDE_LOOP=0(姿态由 thrust-vector cascade 隐式推导,per D6 §4.3.3 / §4.3.6);契约形状段同步更新合法 truth-table 引用集合 |
 
 ## Self-check
 
