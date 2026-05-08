@@ -3,10 +3,10 @@ work_item: D6
 title: FMS↔Controller 接口约定(cmd_mask 位语义 / 参考字段优先级 / 互斥规则)
 upstream: [架构 v1 §7.1, 架构 v1 §7.2, 架构 v1 §12.1, 架构 v1 §12.2, A3, A6, B1, B2, D1, D2, E2, D3, D4, E1]
 contract_impact: yes
-status: draft
+status: reviewed
 authored_at: 2026-05-08
-last_reviewed_at:
-reviewer_verdict: none
+last_reviewed_at: 2026-05-08
+reviewer_verdict: pass
 ---
 
 # D6 FMS↔Controller 接口约定(cmd_mask 位语义 / 参考字段优先级 / 互斥规则)

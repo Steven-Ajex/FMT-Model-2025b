@@ -3,10 +3,10 @@ work_item: E1
 title: Controller 功能设计(启用环路、cmd_mask 裁剪规则、各环职责)
 upstream: [架构v1, A3, A4, A6, A7, B1, B2, B3, C1, D1, E2, F1, D3, D4, D6]
 contract_impact: no
-status: draft
+status: reviewed
 authored_at: 2026-05-08
-last_reviewed_at:
-reviewer_verdict: none
+last_reviewed_at: 2026-05-08
+reviewer_verdict: pass
 ---
 
 # E1 Controller 功能设计
