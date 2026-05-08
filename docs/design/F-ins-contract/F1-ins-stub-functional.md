@@ -3,10 +3,10 @@ work_item: F1
 title: ins_stub 功能设计
 upstream: ["架构 v1", "A1", "A3", "A4", "A5", "A6", "A7", "A8", "B1", "B2", "B5", "C1"]
 contract_impact: no
-status: draft
+status: reviewed
 authored_at: 2026-05-08
-last_reviewed_at:
-reviewer_verdict: none
+last_reviewed_at: 2026-05-08
+reviewer_verdict: pass
 ---
 
 # F1 ins_stub 功能设计(MIL-only INS 替身的功能契约)
@@ -535,6 +535,7 @@ H4 ⇢ F1                    (下游;§4.9 H4 forward-consume F1 knob shape)
 | 日期 | 修改者 | 说明 |
 |---|---|---|
 | 2026-05-08 | F1 author | 初稿;锁定 ins_stub harness-only boundary、ideal / noisy 两变体集合、13 类 knob shape;forward-cite [H3](../H-verification/H3-regression-baseline.md) RNG seed contract、[H4](../H-verification/H4-fault-catalog.md) fault catalog;承接 [A6 §4.7.1](../A-architecture/A6-init-reset-contract.md) 对 F1 的 explicit demand("ins_stub 必须模拟 INS_Status / INS_Flag 位域,使 FMS 同样 gate")+ 架构 v1 §17 risk 4 mitigation;消费 [B5](../B-contracts/B5-ins-bus-mirror.md) mirror artifact 作为输出 schema 真理;对 [C1](../C-plant/C1-plant-functional.md) 同 wave 6 sibling 做 forward-cite(非 co-seal)。commit hash 占位 `<pending hash>` 与 A3 / A6 / A7 / B1 / B2 / B5 同 batch 模式一致。 |
+| 2026-05-08 | orchestrator | Reviewer verdict=pass(7/7 准则全部 met,sibling C1 已同期 reviewed=pass);frontmatter 升 reviewed。非阻塞建议(下一轮迭代):(a) §4.3.2 quaternion 加噪后 normalize 一行 cross-reference §4.5(F2 实现);(b) §4.3.5 INVALID 期间各 navigation field 取值 implementation-deferred 显式声明 + F3 不依赖;(c) §4.4.1 rng_seed 缺省 → CI 拒收无种子的场景;(d) §4.4.1 PARAM 候选先 harness-local 后 B3 final。INDEX 已记录。 |
 
 ## Self-check
 

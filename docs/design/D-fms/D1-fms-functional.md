@@ -3,10 +3,10 @@ work_item: D1
 title: FMS 功能设计
 upstream: [架构v1, A1, A2, A3, A4, A5, A6, A7, A8, B1, B2, B3]
 contract_impact: no
-status: draft
+status: reviewed
 authored_at: 2026-05-08
-last_reviewed_at:
-reviewer_verdict: none
+last_reviewed_at: 2026-05-08
+reviewer_verdict: pass
 ---
 
 # D1 FMS 功能设计
@@ -516,6 +516,7 @@ D1 是 D 区起点,本工作项之后 D 区其余文件的功能输入均来自�
 | 日期 | 修改者 | 说明 |
 |---|---|---|
 | 2026-05-08 | fms-architect (D1 author subagent) | 初稿;闭合 D1 全部 7 条退出条件;OQ4 选 transitional + 三阶段退出计划;OQ2 选 macro 保留 + leaf 重写 |
+| 2026-05-08 | orchestrator | Reviewer verdict=pass(7/7 准则全部 met);frontmatter 升 reviewed。非阻塞建议(下一轮迭代):(a) §4.1.2 MODE_ACRO 启用条件性显式标 "9/10 always enabled, MODE_ACRO conditional per M-12 / D5";(b) TR-04/TR-09 timeout PARAM 由 D5/B3 单一 owner 锁定;(c) §4.6.4 INS validity echo 字段加入 §5 风险列表;(d) §4.5.2 polygon geofence 限制移到正式 exit-plan / 风险列表;(e) §4.7.3 Phase 5 退出条件 cross-link §5 风险条目。INDEX 已记录。 |
 
 ## Self-check
 

@@ -3,10 +3,10 @@ work_item: C1
 title: Plant 功能设计
 upstream: [架构 v1, A1, A2, A3, A4, A5, A6, A7, A8, B1, B2, B3]
 contract_impact: no
-status: draft
+status: reviewed
 authored_at: 2026-05-08
-last_reviewed_at:
-reviewer_verdict: none
+last_reviewed_at: 2026-05-08
+reviewer_verdict: pass
 ---
 
 # C1 Plant 功能设计(Plant Functional Design)
@@ -478,6 +478,7 @@ per A6 §4.4.2:全字段 **ZERO** 默认;`valid` **HARDCODED false**;`fix_type`(
 | 日期 | 修改者 | 说明 |
 |---|---|---|
 | 2026-05-08 | C1 author | 初稿;闭合退出条件 (a)(b);锁定 §4.6 慢传感器 cadence(委托自 A4 RB-07);7 类物理范围、4 级 ladder、Phase 2 默认 L1/L2/L3/L4 矩阵 |
+| 2026-05-08 | orchestrator | Reviewer verdict=pass(7/7 准则全部 met);frontmatter 升 reviewed。非阻塞建议(下一轮迭代):(a) §4.6.1 Baro=20ms 加 footnote 说明取代 A3 §4.3.7.3 的 10 ms 提示;(b) §4.6.1 L318 "与 ins_stub 10 ms 对齐" 表述收紧为 "1 ms 整数倍 R3";(c) §4.6.1 GPS Latency 列条目澄清是否独立于 cadence。INDEX 已记录。 |
 
 ## Self-check
 

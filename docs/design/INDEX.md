@@ -1,6 +1,6 @@
 # FMT-Model-2025b 设计阶段索引
 
-最后更新:2026-05-07
+最后更新:2026-05-08
 状态:设计阶段进行中。**所有实现工作在设计阶段完成前一律不开始。**
 
 ## 总则
@@ -73,6 +73,9 @@ docs/design/
 | B5 | INS_Out_Bus 镜像同步流程 | [B-contracts/B5-ins-bus-mirror.md](B-contracts/B5-ins-bus-mirror.md) | 2026-05-07 | pass |
 | I2 | Bus/enum 镜像脚本设计 | [I-tooling/I2-bus-enum-mirror.md](I-tooling/I2-bus-enum-mirror.md) | 2026-05-07 | pass |
 | I3 | 契约 diff 脚本设计 | [I-tooling/I3-contract-diff.md](I-tooling/I3-contract-diff.md) | 2026-05-07 | pass |
+| C1 | Plant 功能设计 | [C-plant/C1-plant-functional.md](C-plant/C1-plant-functional.md) | 2026-05-08 | pass |
+| D1 | FMS 功能设计 | [D-fms/D1-fms-functional.md](D-fms/D1-fms-functional.md) | 2026-05-08 | pass |
+| F1 | ins_stub 功能设计 | [F-ins-contract/F1-ins-stub-functional.md](F-ins-contract/F1-ins-stub-functional.md) | 2026-05-08 | pass |
 
 ## 整体计划审查报告
 
@@ -108,6 +111,9 @@ docs/design/
 | 2026-05-07 | B4 (契约 diff 策略) `contract_impact: yes`:24 个 Check ID 跨 6 个 clause(a01..a05 bus 字段顺序+Simulink→C 类型+累计字节宽 / b01..b04 enum 名+数值精确 / c01..c04 *_PARAM 字段顺序+类型+storage class+总字节宽 / d01..d04 *_EXPORT 字段顺序+`period` 数值+`model_info[]` 长度+总字节宽 / e01..e03 entry 符号 *_init / *_step / f01..f03 PARAM 全局符号);严重级 22 fail / 2 warn(b03 firmware-only end-of-list / c04 PARAM byte 估计);零容忍策略;4 阶段触发(pre-export / post-export / pre-merge gate / pre-release gate);`--allow-drift` 受限(reason+expiry+INDEX entry 必填,main/release 与 (e)/(f) 禁用);JSON+Markdown 报告 schema。Firmware 引用同 B1 | [B4-contract-diff.md §4.1, §4.2, §4.3, §4.4, §4.5](B-contracts/B4-contract-diff.md) |
 | 2026-05-07 | B5 (INS_Out_Bus 镜像同步流程) `contract_impact: yes`:Option A firmware-canonical 单向 mirror(arch v1 §17 OQ6 closure);.yaml 文本 mirror 主形式(git-diff 友好);`ins_bus_schema_version` 整数计数器(单调,never-reuse,与 B3 EXPORT semver `schema_version` 不冲撞);Bot-PR + 8 项 reviewer checklist + I3 hard-fail merge gate;3-tier drift escalation(14d MIL/SIH freeze → 28d P0 → 月度 sweep)。Mirror artifact 落地实例强制 `firmware_commit_sha` + `firmware_path` header block,CI regex `^[0-9a-f]{40}$` 拒收非合规 PR(RULES §5 落地)。Firmware 引用:`FMT-Firmware/src/model/ins/<variant>/lib/INS_types.h`,commit hash 占位 `<pending hash>` 与 A3/A6/A7/B1/B2/B3/B4 同期补齐 | [B5-ins-bus-mirror.md §4.1, §4.3, §4.4, §4.6, §4.7, §4.9, §4.10](B-contracts/B5-ins-bus-mirror.md) |
 | 2026-05-07 | I2 + I3 (Wave 5 实现侧) `contract_impact: no`:I2 Python 3.11+ + pycparser + pyyaml + jsonschema,dual-format 输出(Simulink Bus + YAML mirror,JSON Schema 等价校验),三层人工审查闸口 + 7 项 reviewer checklist,§4.9 worked example 含 B5 §4.3.4 header block。I3 24 Check ID 与 B4 §4.1 一一对应,Python 3.10+ + pycparser + pyelftools(libclang fallback),ELF 主 + .c 静态 fallback;`contract-diff/{post-export,pre-merge,pre-release}` CI status-check 名;exit 0/1/2/3 与 B4 §4.4.1 一致;§4.7 worked example 演示 (a)/(b) 双 drift 类。I2/I3 自身不定义契约;契约由 B1/B2/B3 拥有,保护策略由 B4 拥有,跨仓库 PR 流程由 B5 拥有。无独立 INDEX contract impact 条目 | [I2-bus-enum-mirror.md](I-tooling/I2-bus-enum-mirror.md) + [I3-contract-diff.md](I-tooling/I3-contract-diff.md) |
+| 2026-05-08 | Wave 6 完成:C1 + D1 + F1 三个 solo Author + 三个 solo Reviewer 全部 reviewed=pass。三份均 `contract_impact: no`(功能设计;契约由 B 区拥有)。Wave 6 闭合:(a) C1 Plant 7 类物理 + L1..L4 fidelity ladder + Phase 2 默认矩阵 + 4 sensor cadences 锁定;(b) D1 FMS 12 主模式 + 4 failsafe 子模式覆盖 B2 全部 enum + 6 rung 仲裁 + arch v1 §17 OQ4 (transitional) + OQ2 (macro 保留 + leaf 重写) 双闭合;(c) F1 ins_stub harness-only fixture + ideal/noisy 双 variant + 13 类 knob shape + RNG 外部 seed(audit F-05)+ A6 §4.7.1 INS gate 演示 + arch v1 §17 risk 4 mitigation。共 12 条非阻塞建议留待下一轮迭代 | C-plant/ + D-fms/ + F-ins-contract/ + INDEX 已完成清单 |
+| 2026-05-08 | D1 (FMS 功能设计) OQ4 closure: `Control_Out_Bus`-as-FMS-input = **transitional**(Phase 2 enable / Phase 3 SIH evaluate / Phase 5 移除 + I4 codegen 修订);仅用于 MIL parity + Safety cross-check + 诊断,绝不作 setpoint 源 | [D1-fms-functional.md §4.7](D-fms/D1-fms-functional.md) |
+| 2026-05-08 | D1 (FMS 功能设计) OQ2 closure: 现有 FMS 结构 = **macro 保留 + leaf 重写**(arch v1 §12.1 6 sub-module 拓扑沿用,Stateflow / shaper / 多旋翼 leaf 重写以对齐新 B1/B2/B3/A6 契约;codegen byte-equality 与 firmware FMS 不是目标,B4 仅要求 contract-level byte-equality)| [D1-fms-functional.md §4.8](D-fms/D1-fms-functional.md) |
 | 2026-05-05 | A6 (Init/Reset 契约) `contract_impact: yes`:模型仓侧承诺保留 firmware 头文件中 `Plant_init` / `FMS_init` / `Controller_init` 的 `void(void)` 签名;任何 codegen 输出改变 init 签名被视为 hard-fail。Firmware 引用:`FMT-Firmware/src/model/{plant,fms,control}/<vehicle>/lib/{Plant,FMS,Controller}.h` | [A6-init-reset-contract.md §4.2.1](A-architecture/A6-init-reset-contract.md) |
 | 2026-05-05 | A7 (时间约定) `contract_impact: yes`:`uint32_t timestamp` 单位 = ms,epoch = zero-from-boot,49.71 天回卷,模块内 dt 走固定步长(非 timestamp 派生),timestamp 仅用于跨模块陈旧检测/日志/profiling。Firmware 引用:`FMT-Firmware/src/model/fms/fms_interface.h:29`、`FMT-Firmware/src/task/vehicle/normal/task_vehicle.c:59,65,81`、`FMT-Firmware/src/module/system/systime.h:99-100` | [A7-time-conventions.md §4.8](A-architecture/A7-time-conventions.md) |
 | 2026-05-05 | A7 §5 风险登记:`FMT-Firmware/src/model/fms/template_fms/fms_interface.c:24` 签名 `(void)` 与头文件 `(uint32_t timestamp)` 不一致 — 推荐 firmware 侧修复;模型仓不动 firmware | [A7-time-conventions.md §5, §7](A-architecture/A7-time-conventions.md) |
