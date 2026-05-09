@@ -2,7 +2,7 @@
 work_item: E3
 title: Controller 各环算法设计
 upstream: [架构v1, A6, A7, B1, B2, B3, D6, E1, E2]
-contract_impact: no
+contract_impact: yes
 status: draft
 authored_at: 2026-05-09
 last_reviewed_at:
@@ -214,8 +214,8 @@ err_rate_int_pre = err_rate_int + err_rate * Ts
 // 4. D 项(D-on-error)+ 必须 LPF
 //    raw D = (err_rate - err_rate_prev) / Ts
 err_rate_d_raw = (err_rate - err_rate_prev) / Ts
-err_rate_d = LPF_d(err_rate_d_raw, state = err_rate_d_lpf_state, fc = alpha_d_cutoff_hz)
-//    alpha_d_cutoff_hz ∈ [30, 50] Hz(per E5 budget 协商;初值 30 Hz)
+err_rate_d = LPF_d(err_rate_d_raw, state = err_rate_d_lpf_state, fc = rate_d_lpf_cutoff_hz)
+//    rate_d_lpf_cutoff_hz ∈ [30, 50] Hz(per E5 budget 协商;初值 30 Hz)
 err_rate_prev = err_rate    // 状态更新置后步 8
 
 // 5. PID 合成
@@ -245,6 +245,8 @@ moment_b_virtual = moment_sat
 ### 4.6 Anti-windup 算法
 
 E3 在 L-02 与 L-04 两个含 integrator 环统一采用 **back-calculation** 方法。下方给出选型论证 + 公式。
+
+**契约影响声明(2026-05-09 fix-up):** Back-calculation 需要 5 个新增 PARAM 字段:`K_aw_vel_xy`、`K_aw_vel_z`、`K_aw_rate_roll`、`K_aw_rate_pitch`、`K_aw_rate_yaw`,均为 R-T、`single`(float32)、默认值 0.5(vel)/0.3(rate)。这 5 个字段在 [B3 §4.5.2 CONTROL_PARAM](../B-contracts/B3-parameter-schema.md) 通过 RULES §10 sealed-amendment 同期登记(B3 字段总数 39 → 44),并在 INDEX 决策日志登记 contract impact。**B3 既有字段 `vel_int_lim_xy/z`(CONTROL_PARAM.10/11)与 `rate_int_lim_roll/pitch/yaw`(CONTROL_PARAM.26/27/28)保留作 hard-clamp safety 副本**(双层保护:back-calc 主路径 + clamp 兜底)。E3 §4.7.3 D-LPF 截止频率字段使用 B3 既有 `rate_d_lpf_cutoff_hz`(CONTROL_PARAM.29);Phase 2 三个 rate 轴共用同一 cutoff(若未来需要按轴独立 cutoff,触发新一轮契约修订)。
 
 **候选方法对比:**
 
@@ -331,7 +333,7 @@ err_rate_int = err_rate_int_pre - K_aw_rate * sat_excess_total * Ts
 
 #### 4.7.3 D 项 LPF(L-04,**强制**)
 
-- **截止频率:** `fc ∈ [30, 50] Hz`,默认 30 Hz;具体值由 [E5](E5-performance-budget.md) 在性能预算评估后微调,落到 `CONTROL_PARAM.alpha_d_cutoff_hz`。
+- **截止频率:** `fc ∈ [30, 50] Hz`,默认 30 Hz;具体值由 [E5](E5-performance-budget.md) 在性能预算评估后微调,落到 `CONTROL_PARAM.rate_d_lpf_cutoff_hz`。
 - **位置:** L-04 D 项支路(`err_rate_d_raw → err_rate_d`)。
 - **强制理由:** 未滤波的 D 项是噪声放大器:`D ≈ K_d · n[t]/Ts` 中 `n[t]` 哪怕是 `INS_Out_Bus` 量化噪声(LSB ~1e-3 rad/s)经 `K_d/Ts = K_d · 200 Hz` 放大都会在 motor_cmd 上产生可听见的抖动。
 - **离散化:** 同 §4.7 通用形式;**注意:** 离散 D 项 LPF 的等价形式为 `(LPF_d) ∘ (forward-difference)`,可直接用一个状态量 `err_rate_d_lpf_state` 实现(等价于"带极点的差分"):
@@ -420,7 +422,7 @@ E3 仅声明算法存在 + 输入输出端口语义;`Quaternion_From_ThrustDir_A
 
 | 下游 | 关系类型 | E3 提供给下游的输入 |
 |---|---|---|
-| [E4 多旋翼 leaf](E4-multicopter-leaf.md) | E3 → E4 | 各环控制律方程 + 增益槽位列表(`K_p_pos_*` / `K_p_vel_*` / `K_i_vel_*` / `K_aw_vel_*` / `K_p_att_*` / `K_p_rate_*` / `K_i_rate_*` / `K_d_rate_*` / `K_aw_rate_*` / `alpha_d_cutoff_hz`)+ saturation 信号几何接口约定;E4 在此基础上填入数值 + 分配矩阵反算几何 |
+| [E4 多旋翼 leaf](E4-multicopter-leaf.md) | E3 → E4 | 各环控制律方程 + 增益槽位列表(`K_p_pos_*` / `K_p_vel_*` / `K_i_vel_*` / `K_aw_vel_*` / `K_p_att_*` / `K_p_rate_*` / `K_i_rate_*` / `K_d_rate_*` / `K_aw_rate_*` / `rate_d_lpf_cutoff_hz`)+ saturation 信号几何接口约定;E4 在此基础上填入数值 + 分配矩阵反算几何 |
 | [E5 性能预算](E5-performance-budget.md) | E3 → E5 | 各环算法的运算规模(L-04 PID + 3 个 LPF + anti-windup ≈ 最热)+ 滤波器实例数 + Tustin 实现成本估算;E5 据此判断 5 ms 周期内执行可行性 + 决定是否需要 LUT / 定点 |
 | [B3 CONTROL_PARAM](../B-contracts/B3-parameter-schema.md) | E3 ⇢ B3 | E3 锁定增益**结构**(每轴独立 / xy 共用 / z 独立的划分),B3 已分配 39 字段槽位;E4 leaf 兼容性核对时确认字段名 |
 
@@ -428,7 +430,7 @@ E3 仅声明算法存在 + 输入输出端口语义;`Quaternion_From_ThrustDir_A
 
 - **D 项 LPF 截止频率 30 vs 50 Hz**
   - 影响:E5 性能预算 + E4 实测调参
-  - 处置:E3 锁定 default = 30 Hz + `CONTROL_PARAM.alpha_d_cutoff_hz` runtime override;E5 复核后若 phase margin 不足允许 leaf 上调到 50 Hz。
+  - 处置:E3 锁定 default = 30 Hz + `CONTROL_PARAM.rate_d_lpf_cutoff_hz` runtime override;E5 复核后若 phase margin 不足允许 leaf 上调到 50 Hz。
 
 - **L-02 thrust 路径 vs attitude 路径的"虚拟控制"分配**
   - 影响:L-02 输出是 `acc_sp_inner[3]` 还是分裂为 `thrust_scalar + tilt_acc[2]`?
@@ -483,15 +485,16 @@ E3 仅声明算法存在 + 输入输出端口语义;`Quaternion_From_ThrustDir_A
 | 日期 | 修改者 | 说明 |
 |---|---|---|
 | 2026-05-09 | E3 author | 初稿 — 5 环控制律分类 + L-01..L-04 数学方程 + back-calculation anti-windup + Tustin 滤波器 + 前馈策略 + thrust-vector cascade 派生 + init/reset 算法侧稳态 |
+| 2026-05-09 | fix-up author | Wave 9 reviewer I-1 修复:contract_impact `no → yes`(back-calculation 需要 5 个新增 PARAM 字段 K_aw_vel_xy/z + K_aw_rate_roll/pitch/yaw,通过 B3 §4.5.2 sealed-amendment 同期登记);§4.6 添加契约影响声明段;`alpha_d_cutoff_hz` 重命名为 `rate_d_lpf_cutoff_hz`(对齐 B3 既有 CONTROL_PARAM.29);保留 `*_int_lim_*` 作 hard-clamp safety 副本。Self-check 6/7 由 N/A → 显式登记。 |
 
 ## Self-check
 
-- [x] frontmatter 完整,字段值合法(work_item=E3 / contract_impact=no / status=draft / upstream 全部 reviewed)
+- [x] frontmatter 完整,字段值合法(work_item=E3 / contract_impact=yes / status=draft / upstream 全部 reviewed)
 - [x] 上游文档全部存在且 status ≥ reviewed:架构 v1 / A6 / A7 / B1 / B2 / B3 / D6 / E1 / E2 全部 reviewed(per INDEX 已完成清单)
 - [x] 退出条件逐条复核完成,每条均给出依据(§6 表 7 行全 "满足")
 - [x] 引用路径全部可点击访问(架构 v1 / A6 / A7 / B1 / B2 / B3 / D6 / E1 / E2 / E4 / E5 / 00-design-plan / 01-design-relationships)
 - [x] 不存在 RULES §5 禁则中的内容(无 .slx / 无 .m 可执行 / 伪代码全部标 `pseudo` / firmware commit hash 占位 `<pending hash>` 与项目约定一致;不重复 bus/enum/param schema)
-- [N/A] 触及 firmware 契约者(contract_impact=yes)已在 INDEX 决策日志登记 — 本文 contract_impact=no
-- [N/A] 镜像自 firmware 的契约已记录 firmware commit hash + 文件相对路径 — 本文不直接镜像 firmware;`CONTROL_PARAM` 字段引用通过 B3 间接,B3 自身已记录 `<pending hash>`
+- [x] 触及 firmware 契约者(contract_impact=yes)已在 INDEX 决策日志登记 — 2026-05-09 Wave 9 fix-up:back-calculation anti-windup 需 5 个新增 K_aw_* 字段 → 通过 B3 §4.5.2 sealed-amendment 登记 + INDEX 决策日志(orchestrator 在 Wave 9 finalize 时同期登记)
+- [x] 镜像自 firmware 的契约已记录 firmware commit hash + 文件相对路径 — 本文不直接镜像 firmware;`CONTROL_PARAM` 字段引用通过 B3 间接,B3 §3 已记录 `FMT-Firmware/src/model/control/<vehicle>/lib/Controller_types.h` + commit hash 占位 `<pending hash>` 与 A3/A6/A7/B1/B2 同 batch 模式
 - [x] 下游影响已沿关系图识别完毕(§7:E3 → E4、E3 → E5;E2 受影响但未触发 §4.5 骨架补充)
 - [x] 文档不超出本工作项范围(无越权设计):未定义级联拓扑(E2)/ 未定义 cmd_mask 裁剪规则(E1)/ 未定义多旋翼分配矩阵(E4)/ 未定义性能预算(E5)/ 未重复定义 bus/enum/param schema(B 区)

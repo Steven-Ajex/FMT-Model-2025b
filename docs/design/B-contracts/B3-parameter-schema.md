@@ -368,7 +368,12 @@ reviewer_verdict: pass
 | CONTROL_PARAM.26 | `rate_int_lim_roll` | `single` | 4 | N·m | body | 0.30 *(B4 verify; PX4 MC_ROLLRATE_I 限)* | R-T | R-1 GCS-tuned (anti-windup) | | PARAM | MC-only | no | |
 | CONTROL_PARAM.27 | `rate_int_lim_pitch` | `single` | 4 | N·m | body | 0.30 *(B4 verify)* | R-T | R-1 GCS-tuned | | PARAM | MC-only | no | |
 | CONTROL_PARAM.28 | `rate_int_lim_yaw` | `single` | 4 | N·m | body | 0.30 *(B4 verify)* | R-T | R-1 GCS-tuned | | PARAM | MC-only | no | |
-| CONTROL_PARAM.29 | `rate_d_lpf_cutoff_hz` | `single` | 4 | Hz | N/A | 30.0 *(B4 verify; PX4 IMU_DGYRO_CUTOFF)* | R-T | R-1 GCS-tuned | | PARAM | MC-only | no | D 项 LPF |
+| CONTROL_PARAM.29 | `rate_d_lpf_cutoff_hz` | `single` | 4 | Hz | N/A | 30.0 *(B4 verify; PX4 IMU_DGYRO_CUTOFF)* | R-T | R-1 GCS-tuned | | PARAM | MC-only | no | D 项 LPF;Phase 2 三轴共用 |
+| CONTROL_PARAM.40 | `K_aw_vel_xy` | `single` | 4 | dimless | N/A | 0.5 *(B4 verify; back-calc baseline)* | R-T | R-1 GCS-tuned | velocity loop xy back-calculation anti-windup gain (per E3 §4.6.1) | PARAM | MC-only | no | 2026-05-09 amendment |
+| CONTROL_PARAM.41 | `K_aw_vel_z` | `single` | 4 | dimless | N/A | 0.5 *(B4 verify)* | R-T | R-1 GCS-tuned | velocity loop z back-calculation anti-windup gain | PARAM | MC-only | no | 2026-05-09 amendment |
+| CONTROL_PARAM.42 | `K_aw_rate_roll` | `single` | 4 | dimless | N/A | 0.3 *(B4 verify)* | R-T | R-1 GCS-tuned | rate loop roll back-calculation anti-windup gain (per E3 §4.6.2) | PARAM | MC-only | no | 2026-05-09 amendment |
+| CONTROL_PARAM.43 | `K_aw_rate_pitch` | `single` | 4 | dimless | N/A | 0.3 *(B4 verify)* | R-T | R-1 GCS-tuned | rate loop pitch back-calculation anti-windup gain | PARAM | MC-only | no | 2026-05-09 amendment |
+| CONTROL_PARAM.44 | `K_aw_rate_yaw` | `single` | 4 | dimless | N/A | 0.3 *(B4 verify)* | R-T | R-1 GCS-tuned | rate loop yaw back-calculation anti-windup gain | PARAM | MC-only | no | 2026-05-09 amendment |
 | CONTROL_PARAM.30 | `rate_lim_roll_radps` | `single` | 4 | rad/s | body | 3.84 (220°/s) *(B4 verify)* | R-T | R-1 GCS-tuned | `FMS_Out_Bus.ang_rate_cmd_b_radps` saturation | PARAM | MC-only | no | |
 | CONTROL_PARAM.31 | `rate_lim_pitch_radps` | `single` | 4 | rad/s | body | 3.84 *(B4 verify)* | R-T | R-1 GCS-tuned | | PARAM | MC-only | no | |
 | CONTROL_PARAM.32 | `rate_lim_yaw_radps` | `single` | 4 | rad/s | body | 3.49 (200°/s) *(B4 verify)* | R-T | R-1 GCS-tuned | | PARAM | MC-only | no | |
@@ -450,8 +455,8 @@ A6 §4.6.2 要求 B3 schema 字段中标注 `init_use=true / false`(本文件 §
 |---|---:|---:|---:|---:|---|
 | `PLANT_PARAM` | 34 | 18 | 16 | 53% | 几何 / 物理 / 数值类大量 C-I(R-2/R-3);噪声、初始风场、初始 pose 类 R-T(R-1)|
 | `FMS_PARAM` | 43 | 42 | 1 | 98% | mode/failsafe/shaper 几乎全部 GCS 暴露(R-1);仅 `wp_array_max_len`(R-3) C-I |
-| `CONTROL_PARAM` | 39 | 36 | 3 | 92% | PID 增益全部 R-1 GCS-tuned;仅 `mixer_geometry`(R-2)、`hover_thrust_n01`(虽 R-1,但是否 C-I 取决于 codegen 是否常数化 — 此处取 R-T)、`default_cmd_mask_at_init`(R-2 安全态)C-I |
-| **合计** | **116** | **96** | **20** | **83%** | |
+| `CONTROL_PARAM` | 44 *(2026-05-09 amendment: +5 K_aw)* | 41 | 3 | 93% | PID 增益全部 R-1 GCS-tuned;仅 `mixer_geometry`(R-2)、`hover_thrust_n01`(虽 R-1,但是否 C-I 取决于 codegen 是否常数化 — 此处取 R-T)、`default_cmd_mask_at_init`(R-2 安全态)C-I。新增 5 个 K_aw_* 字段(.40-.44)全 R-T per E3 §4.6 back-calculation 需求 |
+| **合计** | **121** *(116 + 5 amendment)* | **101** | **20** | **83%** | |
 
 **Rationale**:Plant 倾向 C-I(几何 / 物理常量,codegen 效率收益高);FMS / Controller 倾向 R-T(GCS 飞行期暴露收益高,代码体积代价小)。这一倾向与架构 v1 §14.3 "intentionally categorized" 的精神一致 — 不是按字段类型机械分配,而是按"谁是 codegen 受益者,谁是 GCS 受益者"判定。
 
@@ -507,7 +512,7 @@ struct <MODULE>_EXPORT_TYPE {
 | `schema_version` | semver 字符串(初稿 `"0.1.0-draft"`) | B4 锁定语义版本规则;变更触发 INDEX 决策日志 |
 | `firmware_compat_hash` | firmware tip commit hash 前 8 位 | B5 / B4 在导出阶段写入 |
 | `build_timestamp` | ISO-8601 | I4 codegen 时写入 |
-| `param_field_count` | uint(本文件 §4.6.4 总字段数;Plant=34 / FMS=43 / Controller=39)| 由 I4 在 codegen 阶段自动写入 |
+| `param_field_count` | uint(本文件 §4.6.4 总字段数;Plant=34 / FMS=43 / Controller=44 *(2026-05-09 amendment: 39→44 with K_aw_* fields)* )| 由 I4 在 codegen 阶段自动写入 |
 
 **注**:`model_info[]` 总字节长度由 firmware 锁定;B4 在 contract diff 中 byte verify "字符串数组总长度相等"。本文件不指定具体字节预算,留 B4。
 
@@ -738,6 +743,7 @@ A6 ⇢ B3        (A6 → B3 由 A6 §7 已声明)
 |---|---|---|
 | 2026-05-07 | B3 author | 初稿(co-seal batch (B1, B2, B3) Wave 4)|
 | 2026-05-07 | orchestrator | shared Reviewer verdict=pass(per-doc 7/7 + cross-doc C-1..C-10 全部 met);frontmatter 升 reviewed;INDEX 决策日志已登记。非阻塞建议:(a) `IntegratorMethod` / `FailsafeAction` / `MixerGeometry` / `GeofenceShape` 在 B2 §4.4.16 占位框架内,首跑 B4 后由 B2 增补;(b) `default_cmd_mask_at_init` 归属(CONTROL_PARAM vs FMS_PARAM)由 D6 / E1 Wave 8 co-seal 裁决;(c) EXPORT 字段集"至少"语义在首跑 B4 后增补。commit hash 占位 `<pending hash>` 与 A3/A6/A7 同期补齐 |
+| 2026-05-09 | fix-up author | Wave 9 sealed-amendment(per RULES §10):新增 5 个 K_aw_* 字段(CONTROL_PARAM.40 K_aw_vel_xy / .41 K_aw_vel_z / .42 K_aw_rate_roll / .43 K_aw_rate_pitch / .44 K_aw_rate_yaw),全 R-T、`single`、默认 0.5(vel)/0.3(rate),支持 [E3 §4.6](../E-controller/E3-loops-algorithm.md) back-calculation anti-windup。CONTROL_PARAM 字段数 39→44;§4.6.4 Tunable budget 同步 (R-T 36→41);§4.7.5 EXPORT param_field_count 同步 (39→44)。**`*_int_lim_*` 字段保留作 hard-clamp safety 副本**(双层保护)。E4 §4.7 兼容性 frame 已含全部新字段(B4 verify pending)。Status 仍为 reviewed,sealed-amendment 不重新评审 — INDEX 决策日志由 orchestrator 在 Wave 9 finalize 时登记 |
 
 ## Self-check
 
