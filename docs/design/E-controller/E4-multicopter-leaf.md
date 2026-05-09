@@ -126,11 +126,11 @@ E4 mixer 子系统输入(per [E2 §4.1.6](E2-controller-structural.md#41-control
 - `c_q = motor_torque_const_nmpn`(N·m/N;= `PLANT_PARAM.09`)
 - `T[k]` = per-motor thrust(N,沿 body -z;k = 0..3)
 
-C3 §4.4.2 forward(为 reviewer 便于核对,逐字 echo):
+C3 §4.4.2 forward(为 reviewer 便于核对,逐字 echo;**Wave 9 fix-up 同期修订** roll 行符号,见 [C3 §8 changelog 2026-05-09 fix-up author 行](../C-plant/C3-multicopter-leaf.md#8-变更日志)):
 
 ```text
 [F_z_b]     [ -1     -1     -1     -1 ]   [T[0]]
-[M_x_b]  =  [ -r     +r     +r     -r ] * [T[1]]      (forward; C3 owns)
+[M_x_b]  =  [ +r     -r     -r     +r ] * [T[1]]      (forward; C3 owns)
 [M_y_b]     [ +r     +r     -r     -r ]   [T[2]]
 [M_z_b]     [+c_q   -c_q   +c_q   -c_q]   [T[3]]
 ```
@@ -144,19 +144,19 @@ E4 inverse(数学上严格的 4×4 矩阵逆;quad-X 几何下 forward 矩阵正�
 得到 (substitute T_total_cmd_n = -F_z_b_cmd 因为机体推力沿 body -z 方向,
 "T_total > 0" 表示净向上推力,即 F_z_b < 0):
 
-  T[0] = T_total/4 - M_roll/(4r) + M_pitch/(4r) + M_yaw/(4·c_q)
-  T[1] = T_total/4 + M_roll/(4r) + M_pitch/(4r) - M_yaw/(4·c_q)
-  T[2] = T_total/4 + M_roll/(4r) - M_pitch/(4r) + M_yaw/(4·c_q)
-  T[3] = T_total/4 - M_roll/(4r) - M_pitch/(4r) - M_yaw/(4·c_q)
+  T[0] = T_total/4 + M_roll/(4r) + M_pitch/(4r) + M_yaw/(4·c_q)
+  T[1] = T_total/4 - M_roll/(4r) + M_pitch/(4r) - M_yaw/(4·c_q)
+  T[2] = T_total/4 - M_roll/(4r) - M_pitch/(4r) + M_yaw/(4·c_q)
+  T[3] = T_total/4 + M_roll/(4r) - M_pitch/(4r) - M_yaw/(4·c_q)
 ```
 
 矩阵化形式(供 leaf 静态实例化):
 
 ```text
-[T[0]]     [ 1/4    -1/(4r)    +1/(4r)    +1/(4·c_q) ]   [T_total ]
-[T[1]]  =  [ 1/4    +1/(4r)    +1/(4r)    -1/(4·c_q) ] * [M_roll  ]
-[T[2]]     [ 1/4    +1/(4r)    -1/(4r)    +1/(4·c_q) ]   [M_pitch ]
-[T[3]]     [ 1/4    -1/(4r)    -1/(4r)    -1/(4·c_q) ]   [M_yaw   ]
+[T[0]]     [ 1/4    +1/(4r)    +1/(4r)    +1/(4·c_q) ]   [T_total ]
+[T[1]]  =  [ 1/4    -1/(4r)    +1/(4r)    -1/(4·c_q) ] * [M_roll  ]
+[T[2]]     [ 1/4    -1/(4r)    -1/(4r)    +1/(4·c_q) ]   [M_pitch ]
+[T[3]]     [ 1/4    +1/(4r)    -1/(4r)    -1/(4·c_q) ]   [M_yaw   ]
 ```
 
 #### 4.2.3 数学一致性验证(E4 inverse · C3 forward = I)

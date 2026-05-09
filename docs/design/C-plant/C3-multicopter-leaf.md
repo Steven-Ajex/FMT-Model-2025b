@@ -218,21 +218,21 @@ C3 落地的是 **forward** 分配矩阵(motor cmd / thrust → body force / mom
 
 前向 4×4 分配(quad-X,motor 编号 §4.1.2):
   Total thrust (body -z): F_z_b = -(T[0] + T[1] + T[2] + T[3])
-  Roll moment  (body x):  M_x_b =  r * (T[1] + T[2] - T[0] - T[3])     # 右侧两电机 - 左侧两电机
+  Roll moment  (body x):  M_x_b =  r * (T[0] + T[3] - T[1] - T[2])     # 左侧两电机 - 右侧两电机
   Pitch moment (body y):  M_y_b =  r * (T[0] + T[1] - T[2] - T[3])     # 前两电机 - 后两电机
   Yaw moment   (body z):  M_z_b =  c_q * (T[0] - T[1] + T[2] - T[3])   # CW(+1) 项 - CCW(-1) 项;与 motor_dir 一致
 ```
 
 **符号校验**(右手 NED-FRD):
 - 前两电机推力大 → `M_y_b > 0` → 机头上仰(俯仰俯仰角 θ 减少 ← 注意 body y 轴 = 右侧)→ 机身 nose-up 即 θ < 0(NED Z 向下);**与 [B1 / A2](../A-architecture/A2-naming-conventions.md) Euler 转角约定一致**(Z-Y-X intrinsic,roll/pitch/yaw 标准)。
-- 右两电机推力大 → `M_x_b > 0` → 滚转 φ > 0 → 右翼下沉 → 与 NED-FRD 右手系一致。
+- 右侧两电机推力大 → `M_x_b < 0` → 滚转 φ < 0 → 右翼上抬 / 左翼下沉。等价说法:左侧两电机推力大 → `M_x_b > 0` → 右翼下沉(FRD +roll)。物理依据(右手叉积 r × F,F = (0,0,-T)):motor[0]/motor[3] 在左侧 (y=-r/√2) → M_x = +r·T;motor[1]/motor[2] 在右侧 (y=+r/√2) → M_x = -r·T。
 - CW 电机(`motor_dir = +1`,`motor[0]` / `motor[2]`)推力大 → `M_z_b > 0` → 机头向右偏(yaw +)。
 
 #### 4.4.2 矩阵化形式(供 leaf 视化或 codegen 使用)
 
 ```text
 [F_z_b]     [ -1     -1     -1     -1 ]   [T[0]]
-[M_x_b]  =  [ -r     +r     +r     -r ] * [T[1]]
+[M_x_b]  =  [ +r     -r     -r     +r ] * [T[1]]
 [M_y_b]     [ +r     +r     -r     -r ]   [T[2]]
 [M_z_b]     [+c_q   -c_q   +c_q   -c_q]   [T[3]]
 ```
@@ -513,6 +513,7 @@ C3 ⇢ B3                         (R-1 / R-4 / R-7 若触发字段增补/修订)
 | 日期 | 修改者 | 说明 |
 |---|---|---|
 | 2026-05-09 | C3 author | 初稿;闭合 [00-design-plan §4.C](../00-design-plan.md) C3 行 5 个 atomic 子条件 + 审计 F-33:(a) 几何(quad-X + arm/motor_pos/motor_dir/cog_offset);(b) 质量惯量(1.5 kg + diag([0.0211, 0.0219, 0.0366]) PX4-class);(c) 电机模型(thrust_max=9N / tau=0.05s / 线性多项式 / DI-05 motor failure);(d) 分配矩阵(quad-X forward 4×4 + 符号校验 + E4 inverse cross-ref);(e) 初始条件(PARAM/HARDCODED/ZERO 三类 echo C1 §4.7);(f) F-33 PLANT_PARAM 兼容性核对(全 34 字段逐行,覆盖率 100%,处置 = align at first B4 run)。Phase 2 默认值汇总表 §4.7 全部 标 `(B4 verify; PX4-class baseline)`。5 VPs 落地 §4.8 |
+| 2026-05-09 | fix-up author | Wave 9 reviewer ISS-1 修复:§4.4.1 / §4.4.2 / sign-check prose roll 行符号反向修正(左两电机正贡献,右两电机负贡献,FRD +roll = right-wing-down 自洽,基于右手叉积 r × F,F = (0,0,-T))。E4 §4.2 inverse 联动修正。 |
 
 ## Self-check
 
