@@ -163,7 +163,7 @@ E4 inverse(数学上严格的 4×4 矩阵逆;quad-X 几何下 forward 矩阵正�
 
 **符号校验**(右手 NED-FRD,与 [C3 §4.4.1 符号校验](../C-plant/C3-multicopter-leaf.md#441-quad-x-前向方程per-412-几何--431-公式) 完全一致):
 
-- 命令 M_roll > 0(机身右翼下沉)→ T[1], T[2] 增加(右两电机)/ T[0], T[3] 减少(左两电机)→ 经 forward 回算 M_x_b > 0 ✓
+- 命令 M_roll > 0(机身右翼下沉,FRD +roll)→ T[0], T[3] 增加(左两电机)/ T[1], T[2] 减少(右两电机)→ 经 forward 回算 M_x_b = r·(T[0]+T[3]-T[1]-T[2]) > 0 ✓(与 [C3 §4.4.1 line 228](../C-plant/C3-multicopter-leaf.md) 一致;右手叉积 r × F 推导:左侧电机 y=-r → +M_x;右侧电机 y=+r → -M_x)
 - 命令 M_pitch > 0(机头上仰,nose-up)→ T[0], T[1] 增加(前两电机)/ T[2], T[3] 减少(后两电机)→ forward M_y_b > 0 ✓
 - 命令 M_yaw > 0(机头向右偏)→ T[0], T[2] 增加(CW 电机,`motor_dir = +1`)/ T[1], T[3] 减少(CCW)→ forward M_z_b = c_q · (T[0] - T[1] + T[2] - T[3]) > 0 ✓
 - 命令 T_total > 0(总向上推力)→ 全部 T[k] += T_total/4 → forward F_z_b = -(T[0]+T[1]+T[2]+T[3]) < 0(沿 body -z,即机体向上)✓
@@ -593,6 +593,7 @@ E4 ↔ E3                        (Wave 9 sibling;E4 字段名集合 ⊆ B3 schem
 | 日期 | 修改者 | 说明 |
 |---|---|---|
 | 2026-05-09 | E4 author | 初稿;闭合 [00-design-plan §4.E](../00-design-plan.md) E4 行 4 个 atomic 子条件 + 审计 F-33:(a) 混控矩阵(quad-X 4×4 inverse,逐字段 r / c_q 派生,数学逆 ⊥ C3 §4.4.2 forward,符号 + hover 不变量验证);(b) 几何(单向 echo C3 §4.1,共享 PLANT_PARAM `.04 / .06 / .07 / .09`);(c) 电机推力曲线对接(线性 default + `thrust_factor` 反向补偿接口);(d) 增益结构(全 39 CONTROL_PARAM 字段引用,position 3 + velocity 9 + attitude 4 + rate 16 + mixer 6 + 启用 1,字段名 100% 等同 B3 §4.5.2);(e) F-33 CONTROL_PARAM 兼容性核对(全 39 字段逐行,覆盖率 100%,处置 = align at first B4 run)。Wave 9 sibling `E3 → E4` known-loose 处置:E4 锁结构骨架 + 字段名 + 数值默认,推迟控制律方程 / anti-windup 算法 / D-term LPF 实现到 E3。输出归一化 §4.3(`motor_cmd[]` 0..1 + saturation + anti-windup 信号回环)+ reset / disarm §4.6(echo A6 三大场景)|
+| 2026-05-09 | fix-up author | Wave 9 cascade 修复(联动 [C3 ISS-1](../C-plant/C3-multicopter-leaf.md)):§4.2.2 inverse roll 列符号反向修正(M_roll 列 T[0..3] 系数从 `[-1/(4r), +1/(4r), +1/(4r), -1/(4r)]` 改为 `[+1/(4r), -1/(4r), -1/(4r), +1/(4r)]`),与 C3 §4.4.2 forward 行修订配套;§4.2.3 sign-validation prose 同步更新(M_roll>0 → 左侧 T[0], T[3] 增加 / 右侧 T[1], T[2] 减少 → 与 C3 §4.4.1 line 228 一致;右手叉积 r × F 物理依据)。Hover invariant T[k] ≈ 3.68 N at hover 不受影响(M_roll=M_pitch=M_yaw=0)。**注**:E4 §4.7 F-33 兼容性 frame 当前仍为 39 行;B3 §4.5.2 sealed-amendment 已新增 5 个 K_aw_* 字段(.40..44 per E3 §4.6 back-calculation 需求),E4 §4.7 在下一轮迭代追加 5 行(C3 / E3 / E4 round-1 review 早于 B3 amendment;参见 §5 R-1 + §4.5.1) |
 
 ## Self-check
 
