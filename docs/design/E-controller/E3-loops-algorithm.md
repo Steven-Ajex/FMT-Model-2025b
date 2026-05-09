@@ -3,10 +3,10 @@ work_item: E3
 title: Controller 各环算法设计
 upstream: [架构v1, A6, A7, B1, B2, B3, D6, E1, E2]
 contract_impact: yes
-status: draft
+status: reviewed
 authored_at: 2026-05-09
-last_reviewed_at:
-reviewer_verdict: none
+last_reviewed_at: 2026-05-09
+reviewer_verdict: pass
 ---
 
 # E3 Controller 各环算法设计

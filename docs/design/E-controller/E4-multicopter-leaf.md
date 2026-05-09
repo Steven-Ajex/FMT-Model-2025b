@@ -3,10 +3,10 @@ work_item: E4
 title: Controller 多旋翼 leaf 设计(混控矩阵 / 几何 / 增益结构 / CONTROL_PARAM 兼容性)
 upstream: [架构v1, A1, A2, A3, A4, A5, A6, A7, A8, B1, B2, B3, C3, D6, E1, E2, E3]
 contract_impact: no
-status: draft
+status: reviewed
 authored_at: 2026-05-09
-last_reviewed_at:
-reviewer_verdict: none
+last_reviewed_at: 2026-05-09
+reviewer_verdict: pass
 ---
 
 # E4 Controller 多旋翼 leaf 设计

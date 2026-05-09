@@ -3,10 +3,10 @@ work_item: D5
 title: FMS 多旋翼 leaf 设计
 upstream: [架构v1, A2, A3, A4, A5, A6, A7, A8, B1, B2, B3, D1, D2, D3, D4, D6]
 contract_impact: no
-status: draft
+status: reviewed
 authored_at: 2026-05-09
-last_reviewed_at:
-reviewer_verdict: none
+last_reviewed_at: 2026-05-09
+reviewer_verdict: pass
 ---
 
 # D5 FMS 多旋翼 leaf 设计

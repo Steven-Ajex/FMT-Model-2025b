@@ -3,10 +3,10 @@ work_item: F3
 title: INS_Out_Bus 消费规则(模型仓侧字段依赖矩阵 / validity 处理 / fallback)
 upstream: ["架构 v1", "A1", "A3", "A6", "A7", "B1", "B2", "B5", "D1", "D3", "D4", "D6", "E1", "F1", "F2"]
 contract_impact: no
-status: draft
+status: reviewed
 authored_at: 2026-05-09
-last_reviewed_at:
-reviewer_verdict: none
+last_reviewed_at: 2026-05-09
+reviewer_verdict: pass
 ---
 
 # F3 INS_Out_Bus 消费规则(模型仓侧字段依赖矩阵 / validity 处理 / fallback)

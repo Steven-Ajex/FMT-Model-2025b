@@ -3,10 +3,10 @@ work_item: C4
 title: Plant 数值与积分设计
 upstream: [架构 v1, A4, A6, A7, B1, B3, C1, C2]
 contract_impact: no
-status: draft
+status: reviewed
 authored_at: 2026-05-09
-last_reviewed_at:
-reviewer_verdict: none
+last_reviewed_at: 2026-05-09
+reviewer_verdict: pass
 ---
 
 # C4 Plant 数值与积分设计(Plant Numerics & Integration Design)
