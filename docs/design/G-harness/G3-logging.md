@@ -3,10 +3,10 @@ work_item: G3
 title: 日志与可观测性设计
 upstream: ["架构 v1", "A2", "A4", "A7", "B1", "B5", "F3", "G1", "G2"]
 contract_impact: no
-status: draft
+status: reviewed
 authored_at: 2026-05-10
-last_reviewed_at:
-reviewer_verdict: none
+last_reviewed_at: 2026-05-10
+reviewer_verdict: pass
 ---
 
 # G3 日志与可观测性设计

@@ -1,6 +1,6 @@
 # FMT-Model-2025b 设计阶段索引
 
-最后更新:2026-05-09
+最后更新:2026-05-10
 状态:设计阶段进行中。**所有实现工作在设计阶段完成前一律不开始。**
 
 ## 总则
@@ -90,6 +90,11 @@ docs/design/
 | E3 | Controller 各环算法设计 | [E-controller/E3-loops-algorithm.md](E-controller/E3-loops-algorithm.md) | 2026-05-09 | pass |
 | E4 | Controller 多旋翼 leaf 设计 | [E-controller/E4-multicopter-leaf.md](E-controller/E4-multicopter-leaf.md) | 2026-05-09 | pass |
 | F3 | INS_Out_Bus 消费规则 | [F-ins-contract/F3-consumption-rules.md](F-ins-contract/F3-consumption-rules.md) | 2026-05-09 | pass |
+| G1 | MIL 顶层结构设计 | [G-harness/G1-mil-toplevel.md](G-harness/G1-mil-toplevel.md) | 2026-05-10 | pass |
+| G2 | 多速率调度设计 | [G-harness/G2-rate-scheduling.md](G-harness/G2-rate-scheduling.md) | 2026-05-10 | pass |
+| G3 | 日志与可观测性设计 | [G-harness/G3-logging.md](G-harness/G3-logging.md) | 2026-05-10 | pass |
+| G4 | Pilot_Cmd 注入设计 | [G-harness/G4-pilot-injection.md](G-harness/G4-pilot-injection.md) | 2026-05-10 | pass |
+| E5 | Controller 性能预算设计 | [E-controller/E5-performance-budget.md](E-controller/E5-performance-budget.md) | 2026-05-10 | pass |
 
 ## 整体计划审查报告
 
@@ -133,6 +138,7 @@ docs/design/
 | 2026-05-09 | Wave 9 完成:6 个 solo Author + 6 个 solo Reviewer 并行(C3 / C4 / D5 / E3 / E4 / F3,无 co-seal)。Round-1:C4 / D5 / E4 / F3 pass;C3 + E3 changes-requested(2 blocking issues)。Fix-up + B3 sealed-amendment + Round-2 verify pass。Wave 9 闭合:(a) C3 quad-X PX4-class baseline + 100% PLANT_PARAM 34 字段 F-33 覆盖;(b) C4 RK4 fixed-step 1ms + 17 连续状态 + per-step quat 归一化 + 6 codegen guards;(c) D5 takeoff/landing/RTL profile + 100% FMS_PARAM 43 字段 F-33 覆盖 + 闭合 D4 三个 §5 open;(d) E3 5-loop 控制律(L-01 P / L-02 PI+FF / L-03 P-quat / L-04 PID + mandatory D-LPF)+ back-calculation anti-windup + Tustin 滤波器;(e) E4 quad-X 4×4 mixer inverse(代数逆 ⊥ C3 §4.4.2 forward)+ hover invariant 验证 + 100% CONTROL_PARAM F-33 覆盖;(f) F3 18 行 INS_Out_Bus 字段消费矩阵 + 8 drop 场景 fallback + 100ms holdoff + 50ms staleness。共 ~22 条非阻塞建议归档 | C-plant/ + D-fms/ + E-controller/ + F-ins-contract/ + INDEX 已完成清单 |
 | 2026-05-09 | C3 ISS-1 fix:§4.4.2 forward 矩阵 roll 行符号反向修复(从 `[-r, +r, +r, -r]` 改为 `[+r, -r, -r, +r]`);右手叉积 r × F 物理依据(motor[0]/motor[3] 在左侧 y=-r → +M_x;motor[1]/motor[2] 在右侧 y=+r → -M_x);右翼下沉 = +roll 自洽。E4 §4.2 inverse roll 列联动 sign-flip(`[+1/(4r), -1/(4r), -1/(4r), +1/(4r)]`)+ §4.2.3 prose 同步。Hover invariant T[k]≈3.68N 不受影响 | [C3 §4.4](C-plant/C3-multicopter-leaf.md) + [E4 §4.2](E-controller/E4-multicopter-leaf.md) |
 | 2026-05-09 | E3 (Controller 各环算法) `contract_impact: no → yes`:back-calculation anti-windup 需要 5 个新增 PARAM 字段 K_aw_vel_xy/z + K_aw_rate_roll/pitch/yaw → 通过 [B3 §4.5.2 sealed-amendment](B-contracts/B3-parameter-schema.md) 同期登记(per RULES §10);CONTROL_PARAM 字段数 39→44(R-T 36→41,占比 92%→93%);EXPORT param_field_count 39→44。E3 §4.7.3 `alpha_d_cutoff_hz` 重命名为 `rate_d_lpf_cutoff_hz`(对齐 B3 既有 CONTROL_PARAM.29;Phase 2 三 rate 轴共用同一 cutoff)。`*_int_lim_*`(CONTROL_PARAM.10/11/26/27/28)保留作 hard-clamp safety 副本(双层保护:back-calc 主路径 + clamp 兜底)。Firmware 引用同 B3 | [E3 §4.6](E-controller/E3-loops-algorithm.md) + [B3 §4.5.2](B-contracts/B3-parameter-schema.md) |
+| 2026-05-10 | Wave 10 完成:G1 + G2 + G3 + G4 + E5 五项并行 reviewed=pass。5 solo Author + 5 solo Reviewer;known-loose `G1→G3/G4` + `G2→G3` 已在各文档 §3 显式 acknowledge(同 Wave 7 E1→E2 / Wave 9 E3→E4 模式)。Wave 10 闭合:(a) G1 三模块 = Model Reference + ins_stub = plain Subsystem + 5 个正交 VPs + W-01..W-15 wire-level annotation;(b) G2 Solver Fixed-step / discrete / 0.001s base / SingleTasking + Sample Time 表 + 7 RB-NN 部署 + 4-color check + 6 codegen 禁令;(c) G3 7 类 minimum logsout 信号集 + 3 类命名约定 + DocUnits + 7 plot 脚本 + 11 manifest 字段(含 firmware_commit_sha + ins_bus_schema_version)+ channel ID 5 governance rules;(d) G4 CSV 主用 + scenario.yaml DSL(12 actions)+ raw G4 vs conditioned D4 分工 + Phase 5+ live RC 接口预声明;(e) E5 5000 µs 总预算分 7 行 + 1300 µs reserve(L-04=30% hot loop)+ 10 hot-path 禁令 + LUT 1D≤64/2D≤32×32/3D banned + Phase 2 全 single + Q15/Q31 placeholder + 3-stage profiling。共 ~30 条非阻塞建议归档 | G-harness/ + E-controller/E5 + INDEX 已完成清单 |
 | 2026-05-08 | D6 (FMS↔Controller 接口约定) `contract_impact: yes`:8 bits cmd_mask 位语义(MASK_BIT_POSITION_LOOP / VELOCITY_LOOP / ACCELERATION_LOOP / ATTITUDE_LOOP / RATE_LOOP / YAW_LOOP / YAW_RATE_LOOP / THROTTLE_PASSTHROUGH);三 R-Pri 优先级规则;§4.4.1 truth-table 18 行(legal core + 4 行 implicit-cascade 新增);§4.4 10 条 mutex MX-1..MX-10;§4.3.3 row "0,0" 三态明确(implicit cascade legal / MX-8 illegal / MX-7 ground-test);§4.3.5 yaw 三源策略(BIT_ATT+BIT_YAW 共置=合法+optional INFO,explicit yaw 优于 quat 内嵌)。Firmware 引用同 B1。位号语义任何变更视为 firmware 契约 break,需 INDEX 决策日志登记 | [D6-fms-controller-interface.md §4.1, §4.2, §4.3, §4.4](D-fms/D6-fms-controller-interface.md) |
 | 2026-05-05 | A6 (Init/Reset 契约) `contract_impact: yes`:模型仓侧承诺保留 firmware 头文件中 `Plant_init` / `FMS_init` / `Controller_init` 的 `void(void)` 签名;任何 codegen 输出改变 init 签名被视为 hard-fail。Firmware 引用:`FMT-Firmware/src/model/{plant,fms,control}/<vehicle>/lib/{Plant,FMS,Controller}.h` | [A6-init-reset-contract.md §4.2.1](A-architecture/A6-init-reset-contract.md) |
 | 2026-05-05 | A7 (时间约定) `contract_impact: yes`:`uint32_t timestamp` 单位 = ms,epoch = zero-from-boot,49.71 天回卷,模块内 dt 走固定步长(非 timestamp 派生),timestamp 仅用于跨模块陈旧检测/日志/profiling。Firmware 引用:`FMT-Firmware/src/model/fms/fms_interface.h:29`、`FMT-Firmware/src/task/vehicle/normal/task_vehicle.c:59,65,81`、`FMT-Firmware/src/module/system/systime.h:99-100` | [A7-time-conventions.md §4.8](A-architecture/A7-time-conventions.md) |

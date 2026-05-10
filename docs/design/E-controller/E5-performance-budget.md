@@ -3,10 +3,10 @@ work_item: E5
 title: Controller 性能预算设计
 upstream: [架构v1, A4, A7, B3, E1, E2, E3, E4]
 contract_impact: no
-status: draft
+status: reviewed
 authored_at: 2026-05-10
-last_reviewed_at:
-reviewer_verdict: none
+last_reviewed_at: 2026-05-10
+reviewer_verdict: pass
 ---
 
 # E5 Controller 性能预算设计
